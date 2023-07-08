@@ -1,8 +1,8 @@
-import { build } from 'esbuild';
+import * as esbuild from 'esbuild'
 import { copy } from 'esbuild-plugin-copy';
 
 (async () => {
-  const res = await build({
+  const ctx = await esbuild.context({
     entryPoints: ['./src/browser.ts'],
     bundle: true,
     minify: true,
@@ -10,17 +10,21 @@ import { copy } from 'esbuild-plugin-copy';
     outfile: './dist/main.js',
     plugins: [
       copy({
-        // this is equal to process.cwd(), which means we use cwd path as base path to resolve `to` path
-        // if not specified, this plugin uses ESBuild.build outdir/outfile options as base path.
         resolveFrom: 'cwd',
-        assets: {
+        assets: [{
           from: ['./index.html'],
           to: ['./dist/index.html'],
-        },
+        }, {
+          from: ['./styles.css'],
+          to: ['./dist/styles.css'],
+        }],
         watch: true,
       }),
     ],
-  });
-  console.log(res);
-
+  })
+  await ctx.watch()
+  const { host, port } = await ctx.serve({
+    servedir: 'dist',
+  })
+  console.log({ host, port });
 })();

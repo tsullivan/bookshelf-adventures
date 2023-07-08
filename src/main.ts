@@ -1,10 +1,15 @@
-export const delayMillis = (delayMs: number): Promise<void> => new Promise(resolve => setTimeout(resolve, delayMs));
+import * as Rx from 'rxjs';
 
-export const greet = (name: string): string => `Hello ${name}`
+type WriteOutputFn = (output: string) => void;
 
-export const foo = async (): Promise<boolean> => {
-  console.log(greet('World'))
-  await delayMillis(1000)
-  console.log('done')
-  return true
+export class Game {
+  constructor(private input$: Rx.Observable<string>, private writeOutput: WriteOutputFn) {
+    //
+  }
+
+  public start() {
+    this.input$.subscribe((inputStr) => {
+      this.writeOutput(`you wrote: ${inputStr}`);
+    })
+  }
 }

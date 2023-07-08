@@ -1,8 +1,7 @@
-import * as esbuild from 'esbuild'
+import { BuildOptions } from 'esbuild'
 import { copy } from 'esbuild-plugin-copy';
 
-(async () => {
-  const ctx = await esbuild.context({
+export const getBuildContext = (watch = false): BuildOptions => ({
     entryPoints: ['./src/browser.ts'],
     bundle: true,
     minify: true,
@@ -18,13 +17,7 @@ import { copy } from 'esbuild-plugin-copy';
           from: ['./styles.css'],
           to: ['./dist/styles.css'],
         }],
-        watch: true,
+        watch,
       }),
     ],
   })
-  await ctx.watch()
-  const { host, port } = await ctx.serve({
-    servedir: 'dist',
-  })
-  console.log({ host, port });
-})();

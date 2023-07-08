@@ -1,10 +1,18 @@
-/**
- * This file is the entrypoint of browser builds.
- * The code executes when loaded in a browser.
- */
-import { foo } from './main'
+import * as Rx from 'rxjs';
+import { Game } from './main'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).foo = foo  // instead of casting window to any, you can extend the Window interface: https://stackoverflow.com/a/43513740/5433572
+const output$ = new Rx.BehaviorSubject<string | undefined>(undefined);
+function writeOutput(output: string) {
+    output$.next(output);
+}
 
-console.log('Method "foo" was added to the window object. You can try it yourself by just entering "await foo()"')
+output$.subscribe((output) => console.log(output));
+
+// testing
+const input$ = new Rx.BehaviorSubject<string>('Hello!');
+setInterval(() => {
+    input$.next('Hello again!');
+}, 500)
+
+const game = new Game(input$, writeOutput);
+game.start();

@@ -1,18 +1,33 @@
-import * as Rx from 'rxjs';
-import { Game } from './main'
+import * as Rx from "rxjs";
+import { Game } from "./game";
 
-const output$ = new Rx.BehaviorSubject<string | undefined>(undefined);
+const input$ = new Rx.ReplaySubject<string>();
+const output$ = new Rx.ReplaySubject<string>();
 function writeOutput(output: string) {
-    output$.next(output);
+  output$.next(output);
 }
 
-output$.subscribe((output) => console.log(output));
-
 // testing
-const input$ = new Rx.BehaviorSubject<string>('Hello!');
-setInterval(() => {
-    input$.next('Hello again!');
-}, 500)
+output$.subscribe((output) => {
+  if (output) {
+    console.log(`> ${output}`);
+  }
+});
+input$.subscribe((input) => {
+  console.log(`< ${input}`);
+});
 
-const game = new Game(input$, writeOutput);
+setTimeout(() => {
+  input$.next("Test User");
+}, 800);
+
+const user = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setName: (_name: string) => {
+    return;
+  },
+};
+const gameDeps = { user };
+
+const game = new Game(input$, writeOutput, gameDeps);
 game.start();

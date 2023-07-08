@@ -6,7 +6,7 @@ export const getBuildContext = (watch = false): BuildOptions => ({
     bundle: true,
     minify: true,
     sourcemap: 'external',
-    outfile: './dist/main.js',
+    outfile: './dist/bookshelf-adventures.js',
     plugins: [
       copy({
         resolveFrom: 'cwd',

@@ -11,5 +11,6 @@ export class Canvas {
     }
     // replace loading message
     this.el.replaceChildren();
+    document.title = 'Bookshelf Adventures'
   }
 }

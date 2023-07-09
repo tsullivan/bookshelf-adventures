@@ -30,12 +30,12 @@ export class Game {
     private writeOutput: WriteOutputFn,
     private deps: GameDeps
   ) {
-    this.writeOutput("Hello! What is your name?");
   }
 
   public setup() {
     // DOMContentLoaded
-    const canvas = document.getElementById('div#canvas') as HTMLDivElement | null;
+    this.log(LOG_DEBUG, "in setup");
+    const canvas = document.getElementById('canvas') as HTMLDivElement | null;
     if (!canvas) {
       throw new Error('game setup error!')
     }
@@ -45,7 +45,12 @@ export class Game {
 
   public start() {
     // document loaded
+    this.log(LOG_DEBUG, "in start");
     this.deps.canvas.start();
+
+    // begin chats
+    this.writeOutput("Hello! What is your name?");
+
     this.input$
       .pipe(
         filter(() => true),

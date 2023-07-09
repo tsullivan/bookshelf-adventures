@@ -1,5 +1,5 @@
 import * as Rx from "rxjs";
-import { filter, skip, take, tap } from "rxjs/operators";
+import { filter, skip, switchMap, take, tap } from "rxjs/operators";
 import { User } from "./user";
 import { Canvas } from "./canvas";
 
@@ -29,15 +29,14 @@ export class Game {
     private input$: Rx.Observable<string>,
     private writeOutput: WriteOutputFn,
     private deps: GameDeps
-  ) {
-  }
+  ) {}
 
   public setup() {
     // DOMContentLoaded
     this.log(LOG_DEBUG, "in setup");
-    const canvas = document.getElementById('canvas') as HTMLDivElement | null;
+    const canvas = document.getElementById("canvas") as HTMLDivElement | null;
     if (!canvas) {
-      throw new Error('game setup error!')
+      throw new Error("game setup error!");
     }
     this.deps.canvas.setup(canvas);
     this.log(LOG_DEBUG, "setup complete");
@@ -63,10 +62,19 @@ export class Game {
       )
       .subscribe();
 
-    this.input$.pipe(skip(1)).subscribe((inputStr) => {
-      // handle general input
-      this.log(LOG_DEBUG, `> [${inputStr}]`);
-    });
+    this.input$
+      .pipe(
+        skip(1),
+        switchMap((inputValue) => {
+          // use game state for if/else
+          return Rx.of(`You  wrote: ${inputValue}`);
+        })
+      )
+      .subscribe((outputStr) => {
+        // handle general input
+        this.log(LOG_DEBUG, `> [${outputStr}]`);
+        this.writeOutput(outputStr);
+      });
 
     this.log(LOG_DEBUG, "start complete");
   }

@@ -1,11 +1,14 @@
 import * as Rx from "rxjs";
 import { filter, skip, take, tap } from "rxjs/operators";
 import { User } from "./user";
+import { Canvas } from "./canvas";
 
-type WriteOutputFn = (output: string) => void;
 interface GameDeps {
   user: User;
+  canvas: Canvas;
 }
+
+type WriteOutputFn = (output: string) => void;
 
 enum LogLevel {
   DEBUG = "0",
@@ -13,6 +16,7 @@ enum LogLevel {
   WARN = "2",
   ERROR = "3",
 }
+
 type LogFn = (level: LogLevel, message: string | Error) => void;
 const LOG_DEBUG = LogLevel.DEBUG;
 
@@ -20,6 +24,7 @@ export class Game {
   private log: LogFn = (_level, message) => {
     console.log(`[Game] ${message}`);
   };
+
   constructor(
     private input$: Rx.Observable<string>,
     private writeOutput: WriteOutputFn,
@@ -30,11 +35,17 @@ export class Game {
 
   public setup() {
     // DOMContentLoaded
+    const canvas = document.getElementById('div#canvas') as HTMLDivElement | null;
+    if (!canvas) {
+      throw new Error('game setup error!')
+    }
+    this.deps.canvas.setup(canvas);
     this.log(LOG_DEBUG, "setup complete");
   }
 
   public start() {
     // document loaded
+    this.deps.canvas.start();
     this.input$
       .pipe(
         filter(() => true),
@@ -49,7 +60,7 @@ export class Game {
 
     this.input$.pipe(skip(1)).subscribe((inputStr) => {
       // handle general input
-      this.writeOutput(`You wrote: [${inputStr}]`);
+      this.log(LOG_DEBUG, `> [${inputStr}]`);
     });
 
     this.log(LOG_DEBUG, "start complete");

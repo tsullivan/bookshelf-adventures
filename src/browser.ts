@@ -1,5 +1,6 @@
 import * as Rx from "rxjs";
-import { Game } from "./game";
+import { Game } from "./lib/game";
+import { User } from "./lib/user";
 
 const input$ = new Rx.ReplaySubject<string>();
 const output$ = new Rx.ReplaySubject<string>();
@@ -21,17 +22,13 @@ setTimeout(() => {
   input$.next("Test User");
 }, 800);
 
-const user = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setName: (_name: string) => {
-    return;
-  },
-};
-
+const user = new User();
 const deps = { user };
 const game = new Game(input$, writeOutput, deps);
 
+document.addEventListener('DOMContentLoaded', () => {
+  game.setup();
+})
 window.onload = () => {
   game.start();
-  console.log('Hello load!');
 };

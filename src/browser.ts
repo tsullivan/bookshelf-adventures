@@ -27,7 +27,11 @@ const user = {
     return;
   },
 };
-const gameDeps = { user };
 
-const game = new Game(input$, writeOutput, gameDeps);
-game.start();
+const deps = { user };
+const game = new Game(input$, writeOutput, deps);
+
+window.onload = () => {
+  game.start();
+  console.log('Hello load!');
+};

@@ -3,13 +3,13 @@ import { copy } from "esbuild-plugin-copy";
 
 export const getBuildContext = (dev = false): BuildOptions => {
   let watch = false;
-  let sourcemap: BuildOptions['sourcemap'] = false;
+  let sourcemap: BuildOptions["sourcemap"] = false;
   if (dev) {
     watch = true;
-    sourcemap = 'linked';
+    sourcemap = "linked";
   }
   return {
-    entryPoints: ["./src/browser.ts"],
+    entryPoints: ["./src/js/browser.ts"],
     bundle: true,
     minify: false,
     sourcemap,

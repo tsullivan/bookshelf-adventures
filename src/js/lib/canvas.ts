@@ -1,3 +1,6 @@
+import { createApp } from "vue";
+import App from "../App.vue";
+
 export class Canvas {
   private el: HTMLDivElement | null = null;
 
@@ -12,5 +15,7 @@ export class Canvas {
     // replace loading message
     this.el.replaceChildren();
     document.title = 'Bookshelf Adventures'
+
+    createApp(App).mount("#canvas");
   }
 }

@@ -1,5 +1,6 @@
 import { BuildOptions } from "esbuild";
 import { copy } from "esbuild-plugin-copy";
+import Vue from 'unplugin-vue/esbuild';
 
 export const getBuildContext = (dev = false): BuildOptions => {
   let watch = false;
@@ -12,18 +13,19 @@ export const getBuildContext = (dev = false): BuildOptions => {
     entryPoints: ["./src/js/browser.ts"],
     bundle: true,
     minify: false,
-    sourcemap,
+    sourcemap: false && sourcemap, // FIXME
     outfile: "./dist/bookshelf-adventures.js",
     plugins: [
+      Vue({}),
       copy({
         resolveFrom: "cwd",
         assets: [
           {
-            from: ["./index.html"],
+            from: ["./src/index.html"],
             to: ["./dist/index.html"],
           },
           {
-            from: ["./styles.css"],
+            from: ["./src/styles.css"],
             to: ["./dist/styles.css"],
           },
         ],

@@ -1,11 +1,9 @@
 import * as Rx from "rxjs";
 import { filter, skip, switchMap, take, tap } from "rxjs/operators";
 import { User } from "./user";
-import { Canvas } from "./canvas";
 
 interface GameDeps {
   user: User;
-  canvas: Canvas;
 }
 
 type WriteOutputFn = (output: string) => void;
@@ -34,18 +32,12 @@ export class Game {
   public setup() {
     // DOMContentLoaded
     this.log(LOG_DEBUG, "in setup");
-    const canvas = document.getElementById("canvas") as HTMLDivElement | null;
-    if (!canvas) {
-      throw new Error("game setup error!");
-    }
-    this.deps.canvas.setup(canvas);
     this.log(LOG_DEBUG, "setup complete");
   }
 
   public start() {
     // document loaded
     this.log(LOG_DEBUG, "in start");
-    this.deps.canvas.start();
 
     // begin chats
     this.writeOutput("Hello! What is your name?");

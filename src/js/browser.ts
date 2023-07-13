@@ -26,7 +26,22 @@ function browser() {
     if (!canvasEl) {
       throw new Error(`Start error: invalid HTML`);
     }
+
     canvasEl.replaceChildren(adventure);
+
+    const input = document.getElementById("userInput") as HTMLInputElement;
+    if (!input) {
+      throw new Error(`Start error: invalid HTML`);
+    }
+    Rx.fromEvent(input, "keydown").subscribe((event) => {
+      const { code } = event as KeyboardEvent;
+      const target = event.target as HTMLInputElement;
+      console.log(code, target.value);
+
+      if (code === 'Enter') {
+        input$.next(target.value)
+      }
+    });
   };
 
   output$.subscribe((output) => {

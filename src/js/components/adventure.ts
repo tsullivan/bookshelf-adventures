@@ -24,16 +24,9 @@ export class Adventure extends LitElement {
     });
   }
 
-  controlsTemplate() {
-    return html`<article>
-      <input type="text" id="userControl" />
-    </article>`;
-  }
-
   render() {
     return html`
       <section>${this.chatsTemplate()}</section>
-      <section>${this.controlsTemplate()}</section>
     `;
   }
 }

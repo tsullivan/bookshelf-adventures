@@ -1,10 +1,10 @@
 import * as Rx from "rxjs";
 import { Game } from "./lib/game";
 import { User } from "./lib/user";
-import "./components/greeting";
+import "./components";
 
 function browser() {
-  const greetingEl = document.createElement('bookshelf-greeting');
+  const adventure = document.createElement('bookshelf-adventure');
 
   const input$ = new Rx.ReplaySubject<string>();
   const output$ = new Rx.ReplaySubject<string>();
@@ -28,7 +28,7 @@ function browser() {
       throw new Error(`Start error: invalid HTML`);
     }
 
-    canvasEl.replaceChildren(greetingEl);
+    canvasEl.replaceChildren(adventure);
   };
 
   // testing

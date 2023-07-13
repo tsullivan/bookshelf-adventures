@@ -2,33 +2,26 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 interface ChatMessage {
+  source: "computer" | "user";
   time: Date;
   message: string;
 }
 @customElement("bookshelf-adventure")
 export class Adventure extends LitElement {
   @property()
-  computerChats: ChatMessage[] = [];
-  userChats?: ChatMessage[] = [];
+  private chats: ChatMessage[] = [];
 
-  public addComputerChat(message: string) {
-    const chat: ChatMessage = { time: new Date(), message };
-    this.computerChats.push(chat);
-  }
-
-  public addUserChat(message: string) {
-    const chat: ChatMessage = { time: new Date(), message };
-    this.userChats?.push(chat);
+  addChat(chat: ChatMessage) {
+    this.chats = this.chats.concat(chat);
   }
 
   chatsTemplate() {
-    return this.computerChats.map(() => "");
-  }
-  outputsTemplate() {
-    return (
-      html`<header>Bookshelf Adventures</header>
-        <section>${this.chatsTemplate()}</section>`
-    );
+    return this.chats.map(({ time, source, message }) => {
+      return html`
+        ${time.toISOString()}<br />
+         [${source}] ${message}<br /><br />
+      `;
+    });
   }
 
   controlsTemplate() {
@@ -38,7 +31,10 @@ export class Adventure extends LitElement {
   }
 
   render() {
-    return html` ${this.outputsTemplate()} ${this.controlsTemplate()} `;
+    return html`
+      <section>${this.chatsTemplate()}</section>
+      <section>${this.controlsTemplate()}</section>
+    `;
   }
 }
 

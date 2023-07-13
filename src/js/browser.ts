@@ -4,8 +4,6 @@ import { User } from "./lib/user";
 import "./components";
 
 function browser() {
-  const adventure = document.createElement('bookshelf-adventure');
-
   const input$ = new Rx.ReplaySubject<string>();
   const output$ = new Rx.ReplaySubject<string>();
   const game = new Game(
@@ -16,33 +14,40 @@ function browser() {
     { user: new User() }
   );
 
+  const adventure = document.createElement("bookshelf-adventure");
+
   document.addEventListener("DOMContentLoaded", () => {
     game.setup();
   });
 
   window.onload = () => {
     game.start();
-
     const canvasEl = document.getElementById("canvas") as HTMLDivElement;
     if (!canvasEl) {
       throw new Error(`Start error: invalid HTML`);
     }
-
     canvasEl.replaceChildren(adventure);
   };
 
-  // testing
   output$.subscribe((output) => {
-    if (output) {
-      console.log(`> ${output}`);
-    }
+    adventure.addChat({
+      source: "computer",
+      time: new Date(),
+      message: output,
+    });
   });
   input$.subscribe((input) => {
-    console.log(`< ${input}`);
+    adventure.addChat({
+      source: "user",
+      time: new Date(),
+      message: input,
+    });
   });
+
+  // testing
   setTimeout(() => {
     input$.next("Test User");
-  }, 800);
+  }, 1100);
 }
 
 browser();

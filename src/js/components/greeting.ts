@@ -19,3 +19,9 @@ export class BookshelfGreeting extends LitElement {
     return html`<p>Hello, ${this.name}!</p>`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "bookshelf-greeting": BookshelfGreeting;
+  }
+}

@@ -1,21 +1,49 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
+interface ChatMessage {
+  time: Date;
+  message: string;
+}
 @customElement("bookshelf-greeting")
 export class BookshelfGreeting extends LitElement {
-  // Define scoped styles right with your component, in plain CSS
-  static styles = css`
-    :host {
-      color: blue;
-    }
-  `;
-
-  // Declare reactive properties
   @property()
-  name?: string = "World";
+  computerChats: ChatMessage[] = [];
+  userChats?: ChatMessage[] = [];
 
-  // Render the UI as a function of component state
+  public addComputerChat(message: string) {
+    const chat: ChatMessage = { time: new Date(), message };
+    this.computerChats.push(chat);
+  }
+
+  public addUserChat(message: string) {
+    const chat: ChatMessage = { time: new Date(), message };
+    this.userChats?.push(chat);
+  }
+
+  chatsTemplate() {
+    return this.computerChats.map(() => "");
+  }
+  outputsTemplate() {
+    return (
+      html`<header>Bookshelf Adventures</header>
+        <section>${this.chatsTemplate()}</section>`
+    );
+  }
+
+  controlsTemplate() {
+    return html`<article>
+      <input type="text" id="userControl" />
+    </article>`;
+  }
+
   render() {
-    return html`<p>Hello, ${this.name}!</p>`;
+    return html` ${this.outputsTemplate()} ${this.controlsTemplate()} `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "bookshelf-greeting": BookshelfGreeting;
   }
 }

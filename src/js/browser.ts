@@ -5,7 +5,8 @@ import "./components/greeting";
 
 function browser() {
   const greetingEl = document.createElement('bookshelf-greeting');
-  greetingEl.name = 'Gilbert';
+  greetingEl.title = 'Gilbert';
+  greetingEl.text = 'Gilbert';
 
   const input$ = new Rx.ReplaySubject<string>();
   const output$ = new Rx.ReplaySubject<string>();

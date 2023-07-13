@@ -58,13 +58,16 @@ export class Game {
       .pipe(
         skip(1),
         switchMap((inputValue) => {
-          // use game state for if/else
+          if (inputValue === 'help') {
+            return Rx.of(`You can type "whoami" and I will tell you your name.`);
+          }
+          if (inputValue === 'whoami') {
+            return Rx.of(`You are ${this.deps.user.name}`);
+          }
           return Rx.of(`You  wrote: ${inputValue}`);
         })
       )
       .subscribe((outputStr) => {
-        // handle general input
-        this.log(LOG_DEBUG, `> [${outputStr}]`);
         this.writeOutput(outputStr);
       });
 

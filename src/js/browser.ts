@@ -36,10 +36,10 @@ function browser() {
     Rx.fromEvent(input, "keydown").subscribe((event) => {
       const { code } = event as KeyboardEvent;
       const target = event.target as HTMLInputElement;
-      console.log(code, target.value);
 
       if (code === 'Enter') {
         input$.next(target.value)
+        target.value = '';
       }
     });
   };
@@ -58,11 +58,6 @@ function browser() {
       message: input,
     });
   });
-
-  // testing
-  setTimeout(() => {
-    input$.next("Test User");
-  }, 1100);
 }
 
 browser();

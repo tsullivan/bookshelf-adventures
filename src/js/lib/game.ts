@@ -1,9 +1,12 @@
 import * as Rx from "rxjs";
-import { filter, skip, switchMap, take, tap } from "rxjs/operators";
+import { delay, map, skip, take } from "rxjs/operators";
 import { User } from "./user";
 
-interface GameDeps {
+const PROTAGONIST = "Shelfy";
+
+export interface GameDeps {
   user: User;
+  synth: { speak: SpeechSynthesis["speak"] };
 }
 
 enum LogLevel {
@@ -28,7 +31,18 @@ export class Game {
     this.output$.next(nextOutput);
   };
 
-  constructor(private input$: Rx.Observable<string>, private deps: GameDeps) {}
+  private speak = (message: string) => {
+    const utterance = new SpeechSynthesisUtterance(message);
+    this.deps.synth.speak(utterance);
+  };
+
+  constructor(
+    private input$: Rx.Observable<string>,
+    onMessage: (message: string) => void,
+    private deps: GameDeps
+  ) {
+    this.output$.subscribe(onMessage);
+  }
 
   public setup() {
     // DOMContentLoaded
@@ -43,43 +57,30 @@ export class Game {
     // begin chats
     this.writeOutput("Hello! What is your name?");
 
-    this.input$
-      .pipe(
-        filter(() => true),
-        take(1),
-        tap((name) => {
-          // handle username provided
-          this.deps.user.name = name;
-          this.writeOutput(`Hello, ${name}!`);
-        })
-      )
-      .subscribe();
+    const askName$ = this.input$.pipe(
+      take(1),
+      map((name) => {
+        // handle username provided
+        this.deps.user.name = name;
+        return `Hello, ${name}! My name is ${PROTAGONIST}.`;
+      })
+    );
+    const chat$ = this.input$.pipe(
+      skip(1),
+      map((inputValue) => {
+        // TODO use a service to get an observable to use here
+        return `${this.deps.user.name} wrote: ${inputValue}`;
+      })
+    );
 
-    this.input$
-      .pipe(
-        skip(1),
-        switchMap((inputValue) => {
-          // TODO return an observable provided from an input analyzer
-          if (inputValue === "help") {
-            return Rx.of(
-              `You can type "whoami" and I will tell you your name.`
-            );
-          }
-          if (inputValue === "whoami") {
-            return Rx.of(`You are ${this.deps.user.name}`);
-          }
-          return Rx.of(`You  wrote: ${inputValue}`);
-        })
-      )
+    Rx.merge(askName$, chat$)
+      .pipe(delay(1000))
       .subscribe((outputStr) => {
+        this.speak(outputStr);
         this.writeOutput(outputStr);
       });
 
     this.log(LOG_DEBUG, "start complete");
-  }
-
-  public getOutput$() {
-    return this.output$.asObservable();
   }
 
   public greet() {

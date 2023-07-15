@@ -1,33 +1,40 @@
-import { Game } from "./lib/game";
+import { Game, GameDeps } from "./lib/game";
 import { User } from "./lib/user";
 import "./components";
 
 function browser() {
-  // UI component
+  // Create UI component
   const gameUi = document.createElement("bookshelf-adventure");
 
-  // Logic
-  const gameDeps = { user: new User() };
-  const game = new Game(gameUi.getInput$(), gameDeps);
-
-  // Attach
-  game.getOutput$().subscribe((message) => {
+  // Create responder module
+  const input$ = gameUi.getInput$();
+  const gameDeps: GameDeps = {
+    user: new User(),
+    synth: window.speechSynthesis,
+  };
+  const onMessage = (message: string) => {
     gameUi.addChat({
       source: "computer",
       time: new Date(), // unused
       message,
     });
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    game.setup();
-  });
-
-  window.onload = () => {
-    const canvasEl = document.getElementById("canvas") as HTMLDivElement;
-    if (!canvasEl) throw new Error(`Start error: invalid HTML`);
-    canvasEl.replaceChildren(gameUi);
-    game.start();
   };
+  const game = new Game(input$, onMessage, gameDeps);
+
+  return { game, gameUi };
 }
-browser();
+
+const { game, gameUi } = browser();
+
+// Begin
+document.addEventListener("DOMContentLoaded", () => {
+  game.setup();
+});
+
+window.onload = () => {
+  const canvasEl = document.getElementById("canvas") as HTMLDivElement;
+  if (!canvasEl) throw new Error(`Start error: invalid HTML`);
+  canvasEl.replaceChildren(gameUi);
+  game.start();
+  document.title = "Bookshelf Adventures";
+};

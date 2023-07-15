@@ -13,7 +13,6 @@ export class Adventure extends LitElement {
   @property({ attribute: false })
   private chats: ChatMessage[] = [];
 
-  private inputText = "";
   private input$ = new Rx.ReplaySubject<string>();
 
   public addChat(chat: ChatMessage) {
@@ -48,8 +47,8 @@ export class Adventure extends LitElement {
   private inputTemplate() {
     return html`<input
       type="text"
-      .value=${this.inputText}
       @keyup=${this.handleInputTextKeyUp}
+      autofocus
     />`;
   }
 

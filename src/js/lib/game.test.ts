@@ -6,14 +6,14 @@ let game: Game;
 
 beforeAll(() => {
   const input$ = new Rx.BehaviorSubject<string>(`Hello`);
+  const onMessage = jest.fn();
 
   const user = new User();
   user.name = "Foo";
-  game = new Game(input$, { user });
+  const synth = { speak: jest.fn() };
+  game = new Game(input$, onMessage, { user, synth });
 });
 
 test("greeting", () => {
   expect(game.greet()).toBe("Hello Foo");
 });
-
-// TODO use getOutput$

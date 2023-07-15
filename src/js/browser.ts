@@ -1,35 +1,33 @@
-import * as Rx from "rxjs";
 import { Game } from "./lib/game";
 import { User } from "./lib/user";
 import "./components";
 
 function browser() {
-  const output$ = new Rx.ReplaySubject<string>();
-  const writeOutput = (nextOutput: string) => {
-    output$.next(nextOutput);
-  }
-  const adventure = document.createElement("bookshelf-adventure");
-  const gameDeps = { user: new User() };
-  const game = new Game(writeOutput, adventure.getInput$(), gameDeps);
+  // UI component
+  const gameUi = document.createElement("bookshelf-adventure");
 
-  output$.subscribe((output) => {
-    adventure.addChat({
+  // Logic
+  const gameDeps = { user: new User() };
+  const game = new Game(gameUi.getInput$(), gameDeps);
+
+  // Attach
+  game.getOutput$().subscribe((message) => {
+    gameUi.addChat({
       source: "computer",
-      time: new Date(),
-      message: output,
+      time: new Date(), // unused
+      message,
     });
   });
 
-  return { game, adventure };
-}
-const { game, adventure } = browser();
+  document.addEventListener("DOMContentLoaded", () => {
+    game.setup();
+  });
 
-document.addEventListener("DOMContentLoaded", () => {
-  game.setup();
-});
-window.onload = () => {
-  const canvasEl = document.getElementById("canvas") as HTMLDivElement;
-  if (!canvasEl) throw new Error(`Start error: invalid HTML`);
-  canvasEl.replaceChildren(adventure);
-  game.start();
-};
+  window.onload = () => {
+    const canvasEl = document.getElementById("canvas") as HTMLDivElement;
+    if (!canvasEl) throw new Error(`Start error: invalid HTML`);
+    canvasEl.replaceChildren(gameUi);
+    game.start();
+  };
+}
+browser();

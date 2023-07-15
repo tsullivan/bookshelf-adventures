@@ -36,14 +36,13 @@ export class Adventure extends LitElement {
 
     if (code === "Enter") {
       const input = target.value;
-      this.input$.next(input);
       this.addChat({
         source: "user",
         time: new Date(),
         message: input,
       });
+      this.input$.next(input);
       target.value = "";
-      console.log(this.chats);
     }
   }
   private inputTemplate() {

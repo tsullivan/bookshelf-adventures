@@ -6,8 +6,6 @@ interface GameDeps {
   user: User;
 }
 
-type WriteOutputFn = (output: string) => void;
-
 enum LogLevel {
   DEBUG = "0",
   INFO = "1",
@@ -17,18 +15,20 @@ enum LogLevel {
 
 type LogFn = (level: LogLevel, message: string | Error) => void;
 const LOG_DEBUG = LogLevel.DEBUG;
-const LOG_INFO = LogLevel.INFO;
+// const LOG_INFO = LogLevel.INFO;
 
 export class Game {
   private log: LogFn = (_level, message) => {
     console.log(`[Game] ${message}`);
   };
 
-  constructor(
-    private writeOutput: WriteOutputFn,
-    private input$: Rx.Observable<string>,
-    private deps: GameDeps
-  ) {}
+  private output$ = new Rx.ReplaySubject<string>();
+
+  private writeOutput = (nextOutput: string) => {
+    this.output$.next(nextOutput);
+  };
+
+  constructor(private input$: Rx.Observable<string>, private deps: GameDeps) {}
 
   public setup() {
     // DOMContentLoaded
@@ -42,14 +42,6 @@ export class Game {
 
     // begin chats
     this.writeOutput("Hello! What is your name?");
-
-    this.input$
-      .pipe(
-        tap((message) => {
-          this.log(LOG_INFO, message)
-        })
-      )
-      .subscribe();
 
     this.input$
       .pipe(
@@ -67,6 +59,7 @@ export class Game {
       .pipe(
         skip(1),
         switchMap((inputValue) => {
+          // TODO return an observable provided from an input analyzer
           if (inputValue === "help") {
             return Rx.of(
               `You can type "whoami" and I will tell you your name.`
@@ -83,6 +76,10 @@ export class Game {
       });
 
     this.log(LOG_DEBUG, "start complete");
+  }
+
+  public getOutput$() {
+    return this.output$.asObservable();
   }
 
   public greet() {

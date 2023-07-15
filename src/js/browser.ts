@@ -4,45 +4,13 @@ import { User } from "./lib/user";
 import "./components";
 
 function browser() {
-  const input$ = new Rx.ReplaySubject<string>();
   const output$ = new Rx.ReplaySubject<string>();
-  const game = new Game(
-    input$,
-    (output: string) => {
-      output$.next(output);
-    },
-    { user: new User() }
-  );
-
+  const writeOutput = (nextOutput: string) => {
+    output$.next(nextOutput);
+  }
   const adventure = document.createElement("bookshelf-adventure");
-
-  document.addEventListener("DOMContentLoaded", () => {
-    game.setup();
-  });
-
-  window.onload = () => {
-    game.start();
-    const canvasEl = document.getElementById("canvas") as HTMLDivElement;
-    if (!canvasEl) {
-      throw new Error(`Start error: invalid HTML`);
-    }
-
-    canvasEl.replaceChildren(adventure);
-
-    const input = document.getElementById("userInput") as HTMLInputElement;
-    if (!input) {
-      throw new Error(`Start error: invalid HTML`);
-    }
-    Rx.fromEvent(input, "keydown").subscribe((event) => {
-      const { code } = event as KeyboardEvent;
-      const target = event.target as HTMLInputElement;
-
-      if (code === 'Enter') {
-        input$.next(target.value)
-        target.value = '';
-      }
-    });
-  };
+  const gameDeps = { user: new User() };
+  const game = new Game(writeOutput, adventure.getInput$(), gameDeps);
 
   output$.subscribe((output) => {
     adventure.addChat({
@@ -51,13 +19,17 @@ function browser() {
       message: output,
     });
   });
-  input$.subscribe((input) => {
-    adventure.addChat({
-      source: "user",
-      time: new Date(),
-      message: input,
-    });
-  });
-}
 
-browser();
+  return { game, adventure };
+}
+const { game, adventure } = browser();
+
+document.addEventListener("DOMContentLoaded", () => {
+  game.setup();
+});
+window.onload = () => {
+  const canvasEl = document.getElementById("canvas") as HTMLDivElement;
+  if (!canvasEl) throw new Error(`Start error: invalid HTML`);
+  canvasEl.replaceChildren(adventure);
+  game.start();
+};

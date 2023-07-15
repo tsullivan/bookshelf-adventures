@@ -1,3 +1,4 @@
+import * as Rx from "rxjs";
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
@@ -6,27 +7,57 @@ interface ChatMessage {
   time: Date;
   message: string;
 }
+
 @customElement("bookshelf-adventure")
 export class Adventure extends LitElement {
-  @property()
+  @property({ attribute: false })
   private chats: ChatMessage[] = [];
 
-  addChat(chat: ChatMessage) {
+  private inputText = "";
+  private input$ = new Rx.ReplaySubject<string>();
+
+  public addChat(chat: ChatMessage) {
     this.chats = this.chats.concat(chat);
   }
 
-  chatsTemplate() {
-    return this.chats.map(({ time, source, message }) => {
-      return html`
-        ${time.toISOString()}<br />
-         [${source}] ${message}<br /><br />
-      `;
+  public getInput$() {
+    return this.input$.asObservable();
+  }
+
+  private chatsTemplate() {
+    return this.chats.map(({ source, message }) => {
+      return html` <p>[${source}] ${message}</p> `;
     });
+  }
+
+  private handleInputTextKeyUp(event: KeyboardEvent) {
+    const { code } = event;
+    const target = event.target as HTMLInputElement;
+
+    if (code === "Enter") {
+      const input = target.value;
+      this.input$.next(input);
+      this.addChat({
+        source: "user",
+        time: new Date(),
+        message: input,
+      });
+      target.value = "";
+      console.log(this.chats);
+    }
+  }
+  private inputTemplate() {
+    return html`<input
+      type="text"
+      .value=${this.inputText}
+      @keyup=${this.handleInputTextKeyUp}
+    />`;
   }
 
   render() {
     return html`
       <section>${this.chatsTemplate()}</section>
+      <section>${this.inputTemplate()}</section>
     `;
   }
 }

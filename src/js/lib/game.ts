@@ -17,6 +17,7 @@ enum LogLevel {
 
 type LogFn = (level: LogLevel, message: string | Error) => void;
 const LOG_DEBUG = LogLevel.DEBUG;
+const LOG_INFO = LogLevel.INFO;
 
 export class Game {
   private log: LogFn = (_level, message) => {
@@ -24,8 +25,8 @@ export class Game {
   };
 
   constructor(
-    private input$: Rx.Observable<string>,
     private writeOutput: WriteOutputFn,
+    private input$: Rx.Observable<string>,
     private deps: GameDeps
   ) {}
 
@@ -44,6 +45,14 @@ export class Game {
 
     this.input$
       .pipe(
+        tap((message) => {
+          this.log(LOG_INFO, message)
+        })
+      )
+      .subscribe();
+
+    this.input$
+      .pipe(
         filter(() => true),
         take(1),
         tap((name) => {
@@ -58,10 +67,12 @@ export class Game {
       .pipe(
         skip(1),
         switchMap((inputValue) => {
-          if (inputValue === 'help') {
-            return Rx.of(`You can type "whoami" and I will tell you your name.`);
+          if (inputValue === "help") {
+            return Rx.of(
+              `You can type "whoami" and I will tell you your name.`
+            );
           }
-          if (inputValue === 'whoami') {
+          if (inputValue === "whoami") {
             return Rx.of(`You are ${this.deps.user.name}`);
           }
           return Rx.of(`You  wrote: ${inputValue}`);

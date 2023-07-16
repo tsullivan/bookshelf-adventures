@@ -1,6 +1,7 @@
 import * as Rx from "rxjs";
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { css } from "lit-element/lit-element.js";
 
 interface ChatMessage {
   source: "computer" | "user";
@@ -41,7 +42,7 @@ export class Adventure extends LitElement {
         message: input,
       });
       this.input$.next(input);
-      target.value = "";
+      // target.value = ""; // clear the text input
     }
   }
   private inputTemplate() {
@@ -52,12 +53,29 @@ export class Adventure extends LitElement {
     />`;
   }
 
-  render() {
+  protected render() {
     return html`
-      <section>${this.chatsTemplate()}</section>
-      <section>${this.inputTemplate()}</section>
+      <div id="chats">${this.chatsTemplate()}</div>
+      <div id="inputs">${this.inputTemplate()}</div>
     `;
   }
+
+  static styles = css`
+    :host {
+      padding: 10px;
+      height: 100%;
+    }
+    #chats {
+      height: calc(100% - 100px);
+      border-bottom: 8px solid mediumaquamarine;
+      overflow-y: auto;
+    }
+    input {
+      font-size: 1rem;
+      font-family: monospace;
+      width: 500px;
+    }
+  `;
 }
 
 declare global {

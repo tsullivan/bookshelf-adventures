@@ -57,7 +57,7 @@ export class Game {
     // begin chats
     this.writeOutput("Hello! What is your name?");
 
-    const askName$ = this.input$.pipe(
+    const takeName$ = this.input$.pipe(
       take(1),
       map((name) => {
         // handle username provided
@@ -65,7 +65,7 @@ export class Game {
         return `Hello, ${name}! My name is ${PROTAGONIST}.`;
       })
     );
-    const chat$ = this.input$.pipe(
+    const takeChats$ = this.input$.pipe(
       skip(1),
       map((inputValue) => {
         // TODO use a service to get an observable to use here
@@ -73,7 +73,7 @@ export class Game {
       })
     );
 
-    Rx.merge(askName$, chat$)
+    Rx.merge(takeName$, takeChats$)
       .pipe(delay(1000))
       .subscribe((outputStr) => {
         this.speak(outputStr);

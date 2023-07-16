@@ -3,9 +3,12 @@ html, body {
 }
 
 body {
-  padding: 10px;
   background-color: rgb(134, 155, 176);
   color: rgb(9, 24, 24);
   font-family: 'Courier New', Courier, monospace;
   font-weight: 700;
+}
+
+#canvas {
+  height: 100%;
 }

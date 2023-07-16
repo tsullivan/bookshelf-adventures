@@ -2,7 +2,7 @@ import * as Rx from "rxjs";
 import { delay, map, skip, take } from "rxjs/operators";
 import { User } from "./user";
 
-const PROTAGONIST = "Shelfy";
+const PROTAGONIST = "Shelfie";
 
 export interface GameDeps {
   user: User;
@@ -10,19 +10,16 @@ export interface GameDeps {
 }
 
 enum LogLevel {
-  DEBUG = "0",
-  INFO = "1",
-  WARN = "2",
-  ERROR = "3",
+  DEBUG = "debug",
+  INFO = "info",
 }
-
-type LogFn = (level: LogLevel, message: string | Error) => void;
 const LOG_DEBUG = LogLevel.DEBUG;
 // const LOG_INFO = LogLevel.INFO;
+type LogFn = (level: LogLevel, message: string | Error) => void;
 
 export class Game {
-  private log: LogFn = (_level, message) => {
-    console.log(`[Game] ${message}`);
+  private log: LogFn = (level, message) => {
+    console.log(`[Game/${level}] ${message}`);
   };
 
   private output$ = new Rx.ReplaySubject<string>();

@@ -25,16 +25,19 @@ export class Adventure extends LitElement {
   }
 
   private chatsTemplate() {
-    return this.chats.map(({ source, message }) => {
-      return html` <p>[${source}] ${message}</p> `;
-    });
+    const chatList = [];
+    for (let i = this.chats.length - 1; i >= 0; i--) {
+      const { source, message } = this.chats[i];
+      chatList.push(html` <p>[${source}] ${message}</p> `);
+    }
+    return chatList;
   }
 
   private handleInputTextKeyUp(event: KeyboardEvent) {
     const { code } = event;
     const target = event.target as HTMLInputElement;
 
-    if (code === "Enter") {
+    if (code === "Enter" && target.value !== "") {
       const input = target.value;
       this.addChat({
         source: "user",
@@ -42,7 +45,7 @@ export class Adventure extends LitElement {
         message: input,
       });
       this.input$.next(input);
-      // target.value = ""; // clear the text input
+      target.value = ""; // clear the text input
     }
   }
   private inputTemplate() {
@@ -55,19 +58,18 @@ export class Adventure extends LitElement {
 
   protected render() {
     return html`
+      <div id="inputs" style="margin-bottom: 10px">${this.inputTemplate()}</div>
       <div id="chats">${this.chatsTemplate()}</div>
-      <div id="inputs">${this.inputTemplate()}</div>
     `;
   }
 
   static styles = css`
     :host {
-      padding: 10px;
       height: 100%;
+      padding: 10px;
     }
     #chats {
-      height: calc(100% - 100px);
-      border-bottom: 8px solid mediumaquamarine;
+      height: calc(100% - 120px);
       overflow-y: auto;
     }
     input {

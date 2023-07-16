@@ -13,18 +13,18 @@ export const getBuildContext = (dev = false): BuildOptions => {
     bundle: true,
     minify: false,
     sourcemap: false && sourcemap, // FIXME
-    outfile: "./dist/bookshelf-adventures.js",
+    outfile: "./docs/bookshelf-adventures.js",
     plugins: [
       copy({
         resolveFrom: "cwd",
         assets: [
           {
             from: ["./src/index.html"],
-            to: ["./dist/index.html"],
+            to: ["./docs/index.html"],
           },
           {
             from: ["./src/styles.css"],
-            to: ["./dist/styles.css"],
+            to: ["./docs/styles.css"],
           },
         ],
         watch,

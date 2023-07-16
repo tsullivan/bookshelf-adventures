@@ -59,7 +59,7 @@ export class Adventure extends LitElement {
   protected render() {
     return html`
       <div id="inputs" style="margin-bottom: 10px">${this.inputTemplate()}</div>
-      <div id="chats">${this.chatsTemplate()}</div>
+      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
     `;
   }
 

@@ -2,6 +2,7 @@ import * as Rx from "rxjs";
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { css } from "lit-element/lit-element.js";
+import { User } from "../lib/user";
 
 interface ChatMessage {
   source: "computer" | "user";
@@ -11,6 +12,8 @@ interface ChatMessage {
 
 @customElement("bookshelf-adventure")
 export class Adventure extends LitElement {
+  public user?: User;
+
   @property({ attribute: false })
   private chats: ChatMessage[] = [];
 
@@ -25,12 +28,11 @@ export class Adventure extends LitElement {
   }
 
   private chatsTemplate() {
-    const chatList = [];
-    for (let i = this.chats.length - 1; i >= 0; i--) {
-      const { source, message } = this.chats[i];
-      chatList.push(html` <p>[${source}] ${message}</p> `);
-    }
-    return chatList;
+    return this.chats.map(({ source, message }) => {
+      return html`<p>
+        [${source === "user" ? this.user?.name : source}] ${message}
+      </p>`;
+    });
   }
 
   private handleInputTextKeyUp(event: KeyboardEvent) {
@@ -58,22 +60,23 @@ export class Adventure extends LitElement {
 
   protected render() {
     return html`
-      <div id="inputs" style="margin-bottom: 10px">${this.inputTemplate()}</div>
-      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
+      <div id="chats" aria-live="assertive" style="margin-bottom: 10px">
+        ${this.chatsTemplate()}
+      </div>
+      <div id="inputs">${this.inputTemplate()}</div>
     `;
   }
 
   static styles = css`
     :host {
       height: 100%;
-      padding: 10px;
     }
     #chats {
-      height: calc(100% - 120px);
+      height: calc(100% - 50px);
       overflow-y: auto;
     }
     input {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-family: monospace;
       width: 500px;
     }

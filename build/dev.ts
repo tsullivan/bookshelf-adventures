@@ -6,7 +6,7 @@ import { getBuildContext } from './build_context';
   await ctx.watch()
 
   const { host, port } = await ctx.serve({
-    servedir: 'dist',
+    servedir: 'docs',
   })
 
   console.log({ host, port });

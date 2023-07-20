@@ -1,15 +1,18 @@
+import * as Rx from 'rxjs';
 import { Game, GameDeps } from "./lib/game";
 import { User } from "./lib/user";
 import "./components";
 
 function browser() {
+  const user = new User();
   // Create UI component
   const gameUi = document.createElement("bookshelf-adventure");
+  gameUi.user = user;
 
   // Create responder module
   const input$ = gameUi.getInput$();
   const gameDeps: GameDeps = {
-    user: new User(),
+    user,
     synth: window.speechSynthesis,
   };
   const onMessage = (message: string) => {

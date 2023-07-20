@@ -1982,9 +1982,6 @@
       this._name = null;
     }
     get name() {
-      if (this._name == null) {
-        throw new Error("User not initialized");
-      }
       return this._name;
     }
     set name(value) {
@@ -2620,12 +2617,11 @@
       return this.input$.asObservable();
     }
     chatsTemplate() {
-      const chatList = [];
-      for (let i4 = this.chats.length - 1; i4 >= 0; i4--) {
-        const { source, message } = this.chats[i4];
-        chatList.push(x` <p>[${source}] ${message}</p> `);
-      }
-      return chatList;
+      return this.chats.map(({ source, message }) => {
+        return x`<p>
+        [${source === "user" ? this.user?.name : source}] ${message}
+      </p>`;
+      });
     }
     handleInputTextKeyUp(event) {
       const { code } = event;
@@ -2650,22 +2646,23 @@
     }
     render() {
       return x`
-      <div id="inputs" style="margin-bottom: 10px">${this.inputTemplate()}</div>
-      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
+      <div id="chats" aria-live="assertive" style="margin-bottom: 10px">
+        ${this.chatsTemplate()}
+      </div>
+      <div id="inputs">${this.inputTemplate()}</div>
     `;
     }
   };
   Adventure.styles = i`
     :host {
       height: 100%;
-      padding: 10px;
     }
     #chats {
-      height: calc(100% - 120px);
+      height: calc(100% - 50px);
       overflow-y: auto;
     }
     input {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-family: monospace;
       width: 500px;
     }
@@ -2679,10 +2676,12 @@
 
   // src/js/browser.ts
   function browser() {
+    const user = new User();
     const gameUi2 = document.createElement("bookshelf-adventure");
+    gameUi2.user = user;
     const input$ = gameUi2.getInput$();
     const gameDeps = {
-      user: new User(),
+      user,
       synth: window.speechSynthesis
     };
     const onMessage = (message) => {

@@ -6,9 +6,9 @@ import { User } from "./user";
 const PROTAGONIST = "Shelfie";
 
 export interface GameDeps {
-  user: User;
+  responder: Responder;
   synth: { speak: SpeechSynthesis["speak"] };
-  responder:  Responder;
+  user: User;
 }
 
 enum LogLevel {
@@ -26,7 +26,6 @@ export class Game {
     private deps: GameDeps
   ) {
     this.output$.subscribe(onMessage);
-    this.deps.responder = new Responder(); // FIXME: instantiate from caller
   }
 
   private log: LogFn = (level, message) => {
@@ -67,11 +66,7 @@ export class Game {
     );
     const takeChats$ = this.input$.pipe(
       skip(1),
-      switchMap((inputValue) => {
-        const response$ = this.deps.responder.getResponse$(inputValue);
-        // TODO use a service to get an observable to use here
-        return response$;
-      })
+      switchMap((inputValue) => this.deps.responder.getResponse$(inputValue))
     );
 
     Rx.merge(takeName$, takeChats$)

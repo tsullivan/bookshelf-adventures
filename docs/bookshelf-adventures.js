@@ -1901,6 +1901,9 @@
   function last(arr) {
     return arr[arr.length - 1];
   }
+  function popResultSelector(args) {
+    return isFunction(last(args)) ? args.pop() : void 0;
+  }
   function popScheduler(args) {
     return isScheduler(last(args)) ? args.pop() : void 0;
   }
@@ -2330,6 +2333,112 @@
     });
   }
 
+  // node_modules/rxjs/dist/esm5/internal/util/mapOneOrManyArgs.js
+  var isArray = Array.isArray;
+  function callOrApply(fn, args) {
+    return isArray(args) ? fn.apply(void 0, __spreadArray([], __read(args))) : fn(args);
+  }
+  function mapOneOrManyArgs(fn) {
+    return map(function(args) {
+      return callOrApply(fn, args);
+    });
+  }
+
+  // node_modules/rxjs/dist/esm5/internal/util/argsArgArrayOrObject.js
+  var isArray2 = Array.isArray;
+  var getPrototypeOf = Object.getPrototypeOf;
+  var objectProto = Object.prototype;
+  var getKeys = Object.keys;
+  function argsArgArrayOrObject(args) {
+    if (args.length === 1) {
+      var first_1 = args[0];
+      if (isArray2(first_1)) {
+        return { args: first_1, keys: null };
+      }
+      if (isPOJO(first_1)) {
+        var keys = getKeys(first_1);
+        return {
+          args: keys.map(function(key) {
+            return first_1[key];
+          }),
+          keys
+        };
+      }
+    }
+    return { args, keys: null };
+  }
+  function isPOJO(obj) {
+    return obj && typeof obj === "object" && getPrototypeOf(obj) === objectProto;
+  }
+
+  // node_modules/rxjs/dist/esm5/internal/util/createObject.js
+  function createObject(keys, values) {
+    return keys.reduce(function(result, key, i4) {
+      return result[key] = values[i4], result;
+    }, {});
+  }
+
+  // node_modules/rxjs/dist/esm5/internal/observable/combineLatest.js
+  function combineLatest() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+      args[_i] = arguments[_i];
+    }
+    var scheduler = popScheduler(args);
+    var resultSelector = popResultSelector(args);
+    var _a = argsArgArrayOrObject(args), observables = _a.args, keys = _a.keys;
+    if (observables.length === 0) {
+      return from([], scheduler);
+    }
+    var result = new Observable(combineLatestInit(observables, scheduler, keys ? function(values) {
+      return createObject(keys, values);
+    } : identity));
+    return resultSelector ? result.pipe(mapOneOrManyArgs(resultSelector)) : result;
+  }
+  function combineLatestInit(observables, scheduler, valueTransform) {
+    if (valueTransform === void 0) {
+      valueTransform = identity;
+    }
+    return function(subscriber) {
+      maybeSchedule(scheduler, function() {
+        var length = observables.length;
+        var values = new Array(length);
+        var active = length;
+        var remainingFirstValues = length;
+        var _loop_1 = function(i5) {
+          maybeSchedule(scheduler, function() {
+            var source = from(observables[i5], scheduler);
+            var hasFirstValue = false;
+            source.subscribe(createOperatorSubscriber(subscriber, function(value) {
+              values[i5] = value;
+              if (!hasFirstValue) {
+                hasFirstValue = true;
+                remainingFirstValues--;
+              }
+              if (!remainingFirstValues) {
+                subscriber.next(valueTransform(values.slice()));
+              }
+            }, function() {
+              if (!--active) {
+                subscriber.complete();
+              }
+            }));
+          }, subscriber);
+        };
+        for (var i4 = 0; i4 < length; i4++) {
+          _loop_1(i4);
+        }
+      }, subscriber);
+    };
+  }
+  function maybeSchedule(scheduler, execute, subscription) {
+    if (scheduler) {
+      executeSchedule(subscription, scheduler, execute);
+    } else {
+      execute();
+    }
+  }
+
   // node_modules/rxjs/dist/esm5/internal/operators/mergeInternals.js
   function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalFinalizer) {
     var buffer = [];
@@ -2648,13 +2757,6 @@
     e4("bookshelf-adventure")
   ], Adventure);
 
-  // src/lib/responder.ts
-  var Responder = class {
-    getResponse$(inputValue) {
-      return of(`Hello, "${inputValue}" world!`);
-    }
-  };
-
   // src/lib/game.ts
   var PROTAGONIST = "Shelfie";
   var LOG_DEBUG = "debug" /* DEBUG */;
@@ -2674,7 +2776,6 @@
         this.deps.synth.speak(utterance);
       };
       this.output$.subscribe(onMessage);
-      this.deps.responder = new Responder();
     }
     /* DOMContentLoaded */
     setup() {
@@ -2694,10 +2795,7 @@
       );
       const takeChats$ = this.input$.pipe(
         skip(1),
-        switchMap((inputValue) => {
-          const response$ = this.deps.responder.getResponse$(inputValue);
-          return response$;
-        })
+        switchMap((inputValue) => this.deps.responder.getResponse$(inputValue))
       );
       merge(takeName$, takeChats$).pipe(delay(1e3)).subscribe((outputStr) => {
         this.speak(outputStr);
@@ -2707,6 +2805,60 @@
     }
     greet() {
       return `Hello ${this.deps.user.name}`;
+    }
+  };
+
+  // src/lib/responder.ts
+  var HelpModule = class {
+    constructor() {
+      this.name = "help";
+      this.getResponse$ = (input) => {
+        return of(`hello ${input} i am ${this.name}`);
+      };
+    }
+  };
+  var RepeatModule = class {
+    constructor() {
+      this.name = "repeat";
+      this.getResponse$ = (input) => {
+        return of(`hello ${input} i am ${this.name}`);
+      };
+    }
+  };
+  var GibberishModule = class {
+    constructor() {
+      this.name = "default";
+      this.getResponse$ = (input) => {
+        return of(`hello ${input} i am ${this.name}`);
+      };
+    }
+  };
+  var NeverModule = class {
+    constructor() {
+      this.name = "never";
+      this.getResponse$ = () => of(false);
+    }
+  };
+  var Responder = class {
+    constructor() {
+      this.modules = [];
+      this.addModule(new HelpModule());
+      this.addModule(new RepeatModule());
+      this.addModule(new GibberishModule());
+      this.addModule(new NeverModule());
+    }
+    addModule(module) {
+      const nameExists = this.modules.find(({ name }) => module.name === name);
+      if (nameExists) {
+        throw new Error(`Responder with name ${module.name} already exists!`);
+      }
+      this.modules.push(module);
+    }
+    getResponse$(input) {
+      const responses$ = this.modules.map((m2) => m2.getResponse$(input));
+      return combineLatest(responses$).pipe(
+        map((outputs) => outputs.filter(Boolean).join("\n"))
+      );
     }
   };
 

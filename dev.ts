@@ -1,8 +1,10 @@
 import * as esbuild from 'esbuild'
-import { getBuildContext } from './build_context';
+import { getBuildContext } from './build';
 
 (async () => {
-  const ctx = await esbuild.context(getBuildContext(true))
+  const context = getBuildContext();
+  context.sourcemap = "linked";
+  const ctx = await esbuild.context(context)
   await ctx.watch()
 
   const { host, port } = await ctx.serve({

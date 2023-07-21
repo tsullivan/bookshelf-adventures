@@ -1925,7 +1925,7 @@
     });
   }
 
-  // src/js/lib/game.ts
+  // src/lib/game.ts
   var PROTAGONIST = "Shelfie";
   var LOG_DEBUG = "debug" /* DEBUG */;
   var Game = class {
@@ -1976,7 +1976,7 @@
     }
   };
 
-  // src/js/lib/user.ts
+  // src/lib/user.ts
   var User = class {
     constructor() {
       this._name = null;
@@ -2603,7 +2603,7 @@
   var n6;
   var e6 = null != (null === (n6 = window.HTMLSlotElement) || void 0 === n6 ? void 0 : n6.prototype.assignedElements) ? (o6, n7) => o6.assignedElements(n7) : (o6, n7) => o6.assignedNodes(n7).filter((o7) => o7.nodeType === Node.ELEMENT_NODE);
 
-  // src/js/components/adventure.ts
+  // src/components/adventure.ts
   var Adventure = class extends s4 {
     constructor() {
       super(...arguments);
@@ -2674,7 +2674,7 @@
     e4("bookshelf-adventure")
   ], Adventure);
 
-  // src/js/browser.ts
+  // src/browser.ts
   function browser() {
     const user = new User();
     const gameUi2 = document.createElement("bookshelf-adventure");

@@ -1,4 +1,3 @@
-import * as Rx from 'rxjs';
 import { Game, GameDeps } from "./lib/game";
 import { User } from "./lib/user";
 import "./components";

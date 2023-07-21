@@ -1,18 +1,14 @@
+import * as esbuild from 'esbuild'
+
 import { BuildOptions } from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 
-export const getBuildContext = (dev = false): BuildOptions => {
-  let watch = false;
-  let sourcemap: BuildOptions["sourcemap"] = false;
-  if (dev) {
-    watch = true;
-    sourcemap = "linked";
-  }
+export const getBuildContext = (): BuildOptions => {
   return {
-    entryPoints: ["./src/js/browser.ts"],
+    entryPoints: ["./src/browser.ts"],
     bundle: true,
     minify: false,
-    sourcemap: false && sourcemap, // FIXME
+    sourcemap: false,
     outfile: "./docs/bookshelf-adventures.js",
     plugins: [
       copy({
@@ -27,8 +23,9 @@ export const getBuildContext = (dev = false): BuildOptions => {
             to: ["./docs/styles.css"],
           },
         ],
-        watch,
       }),
     ],
   };
 };
+
+esbuild.build(getBuildContext())

@@ -8,8 +8,9 @@
   "scripts": {
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "test": "jest",
-    "build": "npx ts-node build/build.ts",
-    "dev": "npx ts-node build/dev.ts"
+    "clean": "rm -rf docs",
+    "build": "yarn clean && npx ts-node build.ts",
+    "dev": "npx ts-node dev.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

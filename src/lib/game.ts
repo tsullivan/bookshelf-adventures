@@ -1,5 +1,6 @@
 import * as Rx from "rxjs";
-import { delay, map, skip, take } from "rxjs/operators";
+import { delay, map, skip, switchMap, take } from "rxjs/operators";
+import { Responder } from "./responder";
 import { User } from "./user";
 
 const PROTAGONIST = "Shelfie";
@@ -7,6 +8,7 @@ const PROTAGONIST = "Shelfie";
 export interface GameDeps {
   user: User;
   synth: { speak: SpeechSynthesis["speak"] };
+  responder:  Responder;
 }
 
 enum LogLevel {
@@ -18,6 +20,15 @@ const LOG_DEBUG = LogLevel.DEBUG;
 type LogFn = (level: LogLevel, message: string | Error) => void;
 
 export class Game {
+  constructor(
+    private input$: Rx.Observable<string>,
+    onMessage: (message: string) => void,
+    private deps: GameDeps
+  ) {
+    this.output$.subscribe(onMessage);
+    this.deps.responder = new Responder(); // FIXME: instantiate from caller
+  }
+
   private log: LogFn = (level, message) => {
     console.log(`[Game/${level}] ${message}`);
   };
@@ -33,22 +44,14 @@ export class Game {
     this.deps.synth.speak(utterance);
   };
 
-  constructor(
-    private input$: Rx.Observable<string>,
-    onMessage: (message: string) => void,
-    private deps: GameDeps
-  ) {
-    this.output$.subscribe(onMessage);
-  }
-
+  /* DOMContentLoaded */
   public setup() {
-    // DOMContentLoaded
     this.log(LOG_DEBUG, "in setup");
     this.log(LOG_DEBUG, "setup complete");
   }
 
+  /* window loaded */
   public start() {
-    // document loaded
     this.log(LOG_DEBUG, "in start");
 
     // begin chats
@@ -64,9 +67,10 @@ export class Game {
     );
     const takeChats$ = this.input$.pipe(
       skip(1),
-      map((inputValue) => {
+      switchMap((inputValue) => {
+        const response$ = this.deps.responder.getResponse$(inputValue);
         // TODO use a service to get an observable to use here
-        return `${this.deps.user.name} wrote: ${inputValue}`;
+        return response$;
       })
     );
 

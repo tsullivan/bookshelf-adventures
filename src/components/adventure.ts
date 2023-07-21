@@ -1,7 +1,7 @@
-import * as Rx from "rxjs";
 import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
 import { css } from "lit-element/lit-element.js";
+import { customElement, property } from "lit/decorators.js";
+import * as Rx from "rxjs";
 import { User } from "../lib/user";
 
 interface ChatMessage {
@@ -38,17 +38,19 @@ export class Adventure extends LitElement {
   private handleInputTextKeyUp(event: KeyboardEvent) {
     const { code } = event;
     const target = event.target as HTMLInputElement;
-
-    if (code === "Enter" && target.value !== "") {
-      const input = target.value;
-      this.addChat({
-        source: "user",
-        time: new Date(),
-        message: input,
-      });
-      this.input$.next(input);
-      target.value = ""; // clear the text input
+    if (code !== "Enter" || target.value === "") {
+      return;
     }
+
+    this.chats.length = 0;
+    const input = target.value;
+    target.value = ""; // clear the text input
+    this.input$.next(input);
+    this.addChat({
+      source: "user",
+      time: new Date(),
+      message: input,
+    });
   }
   private inputTemplate() {
     return html`<input
@@ -60,7 +62,7 @@ export class Adventure extends LitElement {
 
   protected render() {
     return html`
-      <div id="chats" aria-live="assertive" style="margin-bottom: 10px">
+      <div id="chats" aria-live="assertive">
         ${this.chatsTemplate()}
       </div>
       <div id="inputs">${this.inputTemplate()}</div>

@@ -1,6 +1,7 @@
-import { Game, GameDeps } from "./lib/game";
-import { User } from "./lib/user";
 import "./components";
+import { Game, GameDeps } from "./lib/game";
+import { Responder } from "./lib/responder";
+import { User } from "./lib/user";
 
 function browser() {
   const user = new User();
@@ -13,6 +14,7 @@ function browser() {
   const gameDeps: GameDeps = {
     user,
     synth: window.speechSynthesis,
+    responder: new Responder(),
   };
   const onMessage = (message: string) => {
     gameUi.addChat({

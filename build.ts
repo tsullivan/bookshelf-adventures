@@ -1,26 +1,26 @@
-import * as esbuild from 'esbuild'
+import * as esbuild from "esbuild";
 
 import { BuildOptions } from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 
-export const getBuildContext = (): BuildOptions => {
+export const getBuildContext = ({ outDir = "./docs" } = {}): BuildOptions => {
   return {
-    entryPoints: ["./src/browser.ts"],
+    entryPoints: [`./src/browser.ts`],
     bundle: true,
     minify: false,
     sourcemap: false,
-    outfile: "./docs/bookshelf-adventures.js",
+    outfile: `${outDir}/bookshelf-adventures.js`,
     plugins: [
       copy({
-        resolveFrom: "cwd",
+        resolveFrom: `cwd`,
         assets: [
           {
-            from: ["./src/index.html"],
-            to: ["./docs/index.html"],
+            from: [`./src/index.html`],
+            to: [`${outDir}/index.html`],
           },
           {
-            from: ["./src/styles.css"],
-            to: ["./docs/styles.css"],
+            from: [`./src/styles.css`],
+            to: [`${outDir}/styles.css`],
           },
         ],
       }),
@@ -28,4 +28,4 @@ export const getBuildContext = (): BuildOptions => {
   };
 };
 
-esbuild.build(getBuildContext())
+esbuild.build(getBuildContext());

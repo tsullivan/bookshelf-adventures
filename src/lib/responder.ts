@@ -1,57 +1,102 @@
 import * as Rx from "rxjs";
-import { map, of } from "rxjs";
+import { of } from "rxjs";
 
-interface ResponderModule {
-  name: string;
-  getResponse$: (input: string) => Rx.Observable<string | false>;
+interface CommandInfo {
+  command: string;
+  description: string;
 }
 
-class HelpModule implements ResponderModule {
+export interface GameServices {
+  getCommands: () => CommandInfo[];
+  setIsMuted: (value: boolean) => void;
+}
+
+export abstract class ResponderModule {
+  constructor(protected services: GameServices) {}
+  public abstract readonly name: string;
+  public abstract getResponse$(input: string): Rx.Observable<string | false>;
+  public abstract keywordCheck(inputString: string): boolean;
+}
+
+class HelpResponder extends ResponderModule {
   name = "help";
-  getResponse$ = (input: string) => {
-    return of(`hello ${input} i am ${this.name}`);
-  };
+  getResponse$() {
+    return of(
+      this.services
+        .getCommands()
+        .reduce<string>((final, { command, description }) => {
+          const prefix = final ? final + "\n\n" : "";
+          return prefix + `**${command}**:\n${description}`;
+        }, "")
+    );
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^help\b/) !== null;
+  }
 }
-class RepeatModule implements ResponderModule {
+class RepeatResponder extends ResponderModule {
   name = "repeat";
-  getResponse$ = (input: string) => {
-    return of(`hello ${input} i am ${this.name}`);
-  };
+  getResponse$(input: string) {
+    return of(`here I will repeat ${input} as many times as you want`);
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^repeat\b/) !== null;
+  }
 }
-class GibberishModule implements ResponderModule {
+class GibberishResponder extends ResponderModule {
   name = "default";
-  getResponse$ = (input: string) => {
-    return of(`hello ${input} i am ${this.name}`);
-  };
+  getResponse$(input: string) {
+    return of(`here will be a random ${input} message`);
+  }
+  public keywordCheck() {
+    return true;
+  }
 }
-class NeverModule implements ResponderModule {
-  name = "never";
-  getResponse$ = () => of(false as const);
+class MuteUnmuteResponder extends ResponderModule {
+  name = "mute_unmute";
+  private _isMuted = false;
+  getResponse$(command: string) {
+    command = command.toLowerCase();
+    if (command !== "mute" && command !== "unmute") {
+      return of(false as const);
+    }
+
+    this._isMuted = command === "mute";
+    this.services.setIsMuted(this._isMuted);
+    return of(this._isMuted ? "Muted." : "Unmuted.");
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^(mute|unmute)$/) !== null;
+  }
 }
 
 export class Responder {
   private modules: ResponderModule[] = [];
 
-  constructor() {
-    this.addModule(new HelpModule());
-    this.addModule(new RepeatModule());
-    this.addModule(new GibberishModule());
-    this.addModule(new NeverModule());
+  constructor(services: GameServices) {
+    this.addResponder(new HelpResponder(services));
+    this.addResponder(new MuteUnmuteResponder(services));
+    this.addResponder(new RepeatResponder(services));
+    this.addResponder(new GibberishResponder(services));
   }
 
-  private addModule(module: ResponderModule) {
+  private addResponder(module: ResponderModule) {
     const nameExists = this.modules.find(({ name }) => module.name === name);
     if (nameExists) {
       throw new Error(`Responder with name ${module.name} already exists!`);
     }
-
     this.modules.push(module);
   }
 
-  public getResponse$(input: string): Rx.Observable<string> {
-    const responses$ = this.modules.map((m) => m.getResponse$(input));
-    return Rx.combineLatest(responses$).pipe(
-      map((outputs) => outputs.filter(Boolean).join("\n"))
-    );
+  public getResponders(userInput: string): ResponderModule[] {
+    return this.modules.filter((res) => {
+      return res.keywordCheck(userInput);
+    });
+  }
+
+  public getCommands(): CommandInfo[] {
+    return this.modules.map((m) => {
+      return { command: m.name, description: "TBD" };
+    });
   }
 }

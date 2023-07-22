@@ -1,12 +1,11 @@
 import * as Rx from "rxjs";
-import { delay, map, skip, switchMap, take } from "rxjs/operators";
-import { Responder } from "./responder";
+import { delay, filter, map, skip, switchMap, take, tap } from "rxjs/operators";
+import { GameServices, Responder } from "./responder";
 import { User } from "./user";
 
 const PROTAGONIST = "Shelfie";
 
 export interface GameDeps {
-  responder: Responder;
   synth: { speak: SpeechSynthesis["speak"] };
   user: User;
 }
@@ -20,11 +19,25 @@ const LOG_DEBUG = LogLevel.DEBUG;
 type LogFn = (level: LogLevel, message: string | Error) => void;
 
 export class Game {
+  private output$ = new Rx.ReplaySubject<string>();
+  private responder: Responder;
+
+  private _isMuted = false;
+  private _services: GameServices = {
+    setIsMuted: (value: boolean) => {
+      this._isMuted = value;
+    },
+    getCommands: () => {
+      return this.responder.getCommands();
+    },
+  };
+
   constructor(
     private input$: Rx.Observable<string>,
     onMessage: (message: string) => void,
     private deps: GameDeps
   ) {
+    this.responder = new Responder(this._services);
     this.output$.subscribe(onMessage);
   }
 
@@ -32,15 +45,8 @@ export class Game {
     console.log(`[Game/${level}] ${message}`);
   };
 
-  private output$ = new Rx.ReplaySubject<string>();
-
   private writeOutput = (nextOutput: string) => {
     this.output$.next(nextOutput);
-  };
-
-  private speak = (message: string) => {
-    const utterance = new SpeechSynthesisUtterance(message);
-    this.deps.synth.speak(utterance);
   };
 
   /* DOMContentLoaded */
@@ -66,13 +72,28 @@ export class Game {
     );
     const takeChats$ = this.input$.pipe(
       skip(1),
-      switchMap((inputValue) => this.deps.responder.getResponse$(inputValue))
+      switchMap((inputValue) => {
+        // FIXME: combine all matched
+        const [responderModule] = this.responder.getResponders(inputValue);
+        const response$ = responderModule.getResponse$(inputValue);
+        return response$;
+      })
     );
 
     Rx.merge(takeName$, takeChats$)
-      .pipe(delay(1000))
+      .pipe(
+        tap((outputStr) => {
+          console.log({ outputStr });
+        }),
+        filter(Boolean),
+        delay(1000)
+      )
       .subscribe((outputStr) => {
-        this.speak(outputStr);
+        if (!this._isMuted) {
+          // FIXME: auto cancellation if the user starts typing again
+          const utterance = new SpeechSynthesisUtterance(outputStr);
+          this.deps.synth.speak(utterance);
+        }
         this.writeOutput(outputStr);
       });
 

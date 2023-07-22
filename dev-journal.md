@@ -3,6 +3,13 @@ A world where bookshelves can have adventures.
 
 Dev Journal
 
+**7/21/2023**
+We're using the SpeechSynthesis API to have the bot chat to the user. It isn't able to chat for the first message, because browsers require that the user initiate an action that results in audio.
+
+The user's input is given to each responder. The Responder returns an observable of a string. Responders have to check if the input applies based on the value (if the input is a command) or needs to be handled because of game state.
+
+The next things to do are to scan in Henry's artwork, and add a `graphicstests` command that will cycle through the art, show some animations, put things on a background. The first graphical game I want to work on will be pong!
+
 **7/8/2023**
 This is a chatbot game where you tell the computer what mini-game you want to play.
 The computer keeps track of where you are in any game, and your overall scores.

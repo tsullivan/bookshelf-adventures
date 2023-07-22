@@ -1901,9 +1901,6 @@
   function last(arr) {
     return arr[arr.length - 1];
   }
-  function popResultSelector(args) {
-    return isFunction(last(args)) ? args.pop() : void 0;
-  }
   function popScheduler(args) {
     return isScheduler(last(args)) ? args.pop() : void 0;
   }
@@ -2333,112 +2330,6 @@
     });
   }
 
-  // node_modules/rxjs/dist/esm5/internal/util/mapOneOrManyArgs.js
-  var isArray = Array.isArray;
-  function callOrApply(fn, args) {
-    return isArray(args) ? fn.apply(void 0, __spreadArray([], __read(args))) : fn(args);
-  }
-  function mapOneOrManyArgs(fn) {
-    return map(function(args) {
-      return callOrApply(fn, args);
-    });
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/util/argsArgArrayOrObject.js
-  var isArray2 = Array.isArray;
-  var getPrototypeOf = Object.getPrototypeOf;
-  var objectProto = Object.prototype;
-  var getKeys = Object.keys;
-  function argsArgArrayOrObject(args) {
-    if (args.length === 1) {
-      var first_1 = args[0];
-      if (isArray2(first_1)) {
-        return { args: first_1, keys: null };
-      }
-      if (isPOJO(first_1)) {
-        var keys = getKeys(first_1);
-        return {
-          args: keys.map(function(key) {
-            return first_1[key];
-          }),
-          keys
-        };
-      }
-    }
-    return { args, keys: null };
-  }
-  function isPOJO(obj) {
-    return obj && typeof obj === "object" && getPrototypeOf(obj) === objectProto;
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/util/createObject.js
-  function createObject(keys, values) {
-    return keys.reduce(function(result, key, i4) {
-      return result[key] = values[i4], result;
-    }, {});
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/observable/combineLatest.js
-  function combineLatest() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
-    }
-    var scheduler = popScheduler(args);
-    var resultSelector = popResultSelector(args);
-    var _a = argsArgArrayOrObject(args), observables = _a.args, keys = _a.keys;
-    if (observables.length === 0) {
-      return from([], scheduler);
-    }
-    var result = new Observable(combineLatestInit(observables, scheduler, keys ? function(values) {
-      return createObject(keys, values);
-    } : identity));
-    return resultSelector ? result.pipe(mapOneOrManyArgs(resultSelector)) : result;
-  }
-  function combineLatestInit(observables, scheduler, valueTransform) {
-    if (valueTransform === void 0) {
-      valueTransform = identity;
-    }
-    return function(subscriber) {
-      maybeSchedule(scheduler, function() {
-        var length = observables.length;
-        var values = new Array(length);
-        var active = length;
-        var remainingFirstValues = length;
-        var _loop_1 = function(i5) {
-          maybeSchedule(scheduler, function() {
-            var source = from(observables[i5], scheduler);
-            var hasFirstValue = false;
-            source.subscribe(createOperatorSubscriber(subscriber, function(value) {
-              values[i5] = value;
-              if (!hasFirstValue) {
-                hasFirstValue = true;
-                remainingFirstValues--;
-              }
-              if (!remainingFirstValues) {
-                subscriber.next(valueTransform(values.slice()));
-              }
-            }, function() {
-              if (!--active) {
-                subscriber.complete();
-              }
-            }));
-          }, subscriber);
-        };
-        for (var i4 = 0; i4 < length; i4++) {
-          _loop_1(i4);
-        }
-      }, subscriber);
-    };
-  }
-  function maybeSchedule(scheduler, execute, subscription) {
-    if (scheduler) {
-      executeSchedule(subscription, scheduler, execute);
-    } else {
-      execute();
-    }
-  }
-
   // node_modules/rxjs/dist/esm5/internal/operators/mergeInternals.js
   function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalFinalizer) {
     var buffer = [];
@@ -2684,6 +2575,37 @@
     });
   }
 
+  // node_modules/rxjs/dist/esm5/internal/operators/tap.js
+  function tap(observerOrNext, error, complete) {
+    var tapObserver = isFunction(observerOrNext) || error || complete ? { next: observerOrNext, error, complete } : observerOrNext;
+    return tapObserver ? operate(function(source, subscriber) {
+      var _a;
+      (_a = tapObserver.subscribe) === null || _a === void 0 ? void 0 : _a.call(tapObserver);
+      var isUnsub = true;
+      source.subscribe(createOperatorSubscriber(subscriber, function(value) {
+        var _a2;
+        (_a2 = tapObserver.next) === null || _a2 === void 0 ? void 0 : _a2.call(tapObserver, value);
+        subscriber.next(value);
+      }, function() {
+        var _a2;
+        isUnsub = false;
+        (_a2 = tapObserver.complete) === null || _a2 === void 0 ? void 0 : _a2.call(tapObserver);
+        subscriber.complete();
+      }, function(err) {
+        var _a2;
+        isUnsub = false;
+        (_a2 = tapObserver.error) === null || _a2 === void 0 ? void 0 : _a2.call(tapObserver, err);
+        subscriber.error(err);
+      }, function() {
+        var _a2, _b;
+        if (isUnsub) {
+          (_a2 = tapObserver.unsubscribe) === null || _a2 === void 0 ? void 0 : _a2.call(tapObserver);
+        }
+        (_b = tapObserver.finalize) === null || _b === void 0 ? void 0 : _b.call(tapObserver);
+      }));
+    }) : identity;
+  }
+
   // src/components/adventure.ts
   var Adventure = class extends s4 {
     constructor() {
@@ -2757,6 +2679,100 @@
     e4("bookshelf-adventure")
   ], Adventure);
 
+  // src/lib/responder.ts
+  var ResponderModule = class {
+    constructor(services) {
+      this.services = services;
+    }
+  };
+  var HelpResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "help";
+    }
+    getResponse$() {
+      return of(
+        this.services.getCommands().reduce((final, { command, description }) => {
+          const prefix = final ? final + "\n\n" : "";
+          return prefix + `**${command}**:
+${description}`;
+        }, "")
+      );
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^help\b/) !== null;
+    }
+  };
+  var RepeatResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "repeat";
+    }
+    getResponse$(input) {
+      return of(`here I will repeat ${input} as many times as you want`);
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^repeat\b/) !== null;
+    }
+  };
+  var GibberishResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "default";
+    }
+    getResponse$(input) {
+      return of(`here will be a random ${input} message`);
+    }
+    keywordCheck() {
+      return true;
+    }
+  };
+  var MuteUnmuteResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "mute_unmute";
+      this._isMuted = false;
+    }
+    getResponse$(command) {
+      command = command.toLowerCase();
+      if (command !== "mute" && command !== "unmute") {
+        return of(false);
+      }
+      this._isMuted = command === "mute";
+      this.services.setIsMuted(this._isMuted);
+      return of(this._isMuted ? "Muted." : "Unmuted.");
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^(mute|unmute)$/) !== null;
+    }
+  };
+  var Responder = class {
+    constructor(services) {
+      this.modules = [];
+      this.addResponder(new HelpResponder(services));
+      this.addResponder(new MuteUnmuteResponder(services));
+      this.addResponder(new RepeatResponder(services));
+      this.addResponder(new GibberishResponder(services));
+    }
+    addResponder(module) {
+      const nameExists = this.modules.find(({ name }) => module.name === name);
+      if (nameExists) {
+        throw new Error(`Responder with name ${module.name} already exists!`);
+      }
+      this.modules.push(module);
+    }
+    getResponders(userInput) {
+      return this.modules.filter((res) => {
+        return res.keywordCheck(userInput);
+      });
+    }
+    getCommands() {
+      return this.modules.map((m2) => {
+        return { command: m2.name, description: "TBD" };
+      });
+    }
+  };
+
   // src/lib/game.ts
   var PROTAGONIST = "Shelfie";
   var LOG_DEBUG = "debug" /* DEBUG */;
@@ -2764,17 +2780,23 @@
     constructor(input$, onMessage, deps) {
       this.input$ = input$;
       this.deps = deps;
+      this.output$ = new ReplaySubject();
+      this._isMuted = false;
+      this._services = {
+        setIsMuted: (value) => {
+          this._isMuted = value;
+        },
+        getCommands: () => {
+          return this.responder.getCommands();
+        }
+      };
       this.log = (level, message) => {
         console.log(`[Game/${level}] ${message}`);
       };
-      this.output$ = new ReplaySubject();
       this.writeOutput = (nextOutput) => {
         this.output$.next(nextOutput);
       };
-      this.speak = (message) => {
-        const utterance = new SpeechSynthesisUtterance(message);
-        this.deps.synth.speak(utterance);
-      };
+      this.responder = new Responder(this._services);
       this.output$.subscribe(onMessage);
     }
     /* DOMContentLoaded */
@@ -2795,70 +2817,29 @@
       );
       const takeChats$ = this.input$.pipe(
         skip(1),
-        switchMap((inputValue) => this.deps.responder.getResponse$(inputValue))
+        switchMap((inputValue) => {
+          const [responderModule] = this.responder.getResponders(inputValue);
+          const response$ = responderModule.getResponse$(inputValue);
+          return response$;
+        })
       );
-      merge(takeName$, takeChats$).pipe(delay(1e3)).subscribe((outputStr) => {
-        this.speak(outputStr);
+      merge(takeName$, takeChats$).pipe(
+        tap((outputStr) => {
+          console.log({ outputStr });
+        }),
+        filter(Boolean),
+        delay(1e3)
+      ).subscribe((outputStr) => {
+        if (!this._isMuted) {
+          const utterance = new SpeechSynthesisUtterance(outputStr);
+          this.deps.synth.speak(utterance);
+        }
         this.writeOutput(outputStr);
       });
       this.log(LOG_DEBUG, "start complete");
     }
     greet() {
       return `Hello ${this.deps.user.name}`;
-    }
-  };
-
-  // src/lib/responder.ts
-  var HelpModule = class {
-    constructor() {
-      this.name = "help";
-      this.getResponse$ = (input) => {
-        return of(`hello ${input} i am ${this.name}`);
-      };
-    }
-  };
-  var RepeatModule = class {
-    constructor() {
-      this.name = "repeat";
-      this.getResponse$ = (input) => {
-        return of(`hello ${input} i am ${this.name}`);
-      };
-    }
-  };
-  var GibberishModule = class {
-    constructor() {
-      this.name = "default";
-      this.getResponse$ = (input) => {
-        return of(`hello ${input} i am ${this.name}`);
-      };
-    }
-  };
-  var NeverModule = class {
-    constructor() {
-      this.name = "never";
-      this.getResponse$ = () => of(false);
-    }
-  };
-  var Responder = class {
-    constructor() {
-      this.modules = [];
-      this.addModule(new HelpModule());
-      this.addModule(new RepeatModule());
-      this.addModule(new GibberishModule());
-      this.addModule(new NeverModule());
-    }
-    addModule(module) {
-      const nameExists = this.modules.find(({ name }) => module.name === name);
-      if (nameExists) {
-        throw new Error(`Responder with name ${module.name} already exists!`);
-      }
-      this.modules.push(module);
-    }
-    getResponse$(input) {
-      const responses$ = this.modules.map((m2) => m2.getResponse$(input));
-      return combineLatest(responses$).pipe(
-        map((outputs) => outputs.filter(Boolean).join("\n"))
-      );
     }
   };
 
@@ -2883,8 +2864,7 @@
     const input$ = gameUi2.getInput$();
     const gameDeps = {
       user,
-      synth: window.speechSynthesis,
-      responder: new Responder()
+      synth: window.speechSynthesis
     };
     const onMessage = (message) => {
       gameUi2.addChat({

@@ -2679,6 +2679,135 @@
     e4("bookshelf-adventure")
   ], Adventure);
 
+  // src/lib/dictionary.json
+  var dictionary_default = {
+    jokes: [
+      "Knock-Knock\nWho's ${adjective:there}?\n${noun:Atch}.\n${noun:Atch} who?\n${verb:Bless} you!",
+      "Knock-Knock\nWho's ${adjective:there}?\n${noun:Heywood}.\n${noun:Heywood} who?\n${noun:Heywood} you let me in? It's ${adjective:cold} out here!!",
+      "Knock-Knock\nWho's ${adjective:there}?\nI am ${noun:Groot}.\nI am ${noun:Groot} who?\nI am ${noun:Groot}!",
+      "Why did I ${verb:throw} ${noun:a human} out of the ${noun:guard tower} ${noun:window}?\nBecause he was ${adjective:fired}.",
+      "Why did the man ${verb:throw} ${noun:a butterfly} out of the ${noun:window}?\nBecause he wanted it to be able to ${verb:smell} around the ${noun:world}!",
+      "Why did the man ${verb:throw} ${noun:a window} out that ${noun:window}?\nBecause he wanted it to ${verb:crash}!",
+      "${noun:Captain America}'s ${adjective:first} ${noun:pet} was ${noun:a goldfish} named ${noun:Fluffy}.",
+      "${noun:Batman} told to ${noun:Robin} did you ${verb:splat} ${noun:your underwear} in ${noun:your face} then ${noun:Robin} ${verb:said} yeah I do ${verb:splat} and a blah blah blah blah blah blah wid de de no no no no n o noooooooooo yes hj",
+      "we jbmgjvjbjgugufufufydyfhfhghggufhgjghghhhhjgfghuhigfuiop90ol.",
+      "4r$#F%ttTttTTttTTttTTttTttTTttTTttTTttTTttTTtTTttTTttTTtTTttTTtTTTtTTtTTTTTTTTTG%%OOOOOOOOOOOOOOOOOoooooooooooooooOOOOOOOOOOOOOOOPPPPPPPPPPPPPppppppppppppppPPPPPPPPPPPPPPPPPPPPSSSSSSSSSSSSSSssssssssssSSSSSSSSSsssSSRRRRRRRRRRRRrrrrrrrr",
+      "What is ${noun:Thor}'s ${adjective:favorite} ${noun:food}?\nThortilla ${noun:chip}s. q2<F3>=]"
+    ],
+    ninjafacts: [
+      "${noun:Ninja}s have ${noun:sword}s",
+      "${noun:Ninja}s have ${noun:karate powers}",
+      "${noun:Ninja}s have ${noun:mask}s that ${verb:cover} their ${noun:mouth}.",
+      "${noun:Ninja}s can ${verb:do karate} like Hai Ya! Ka Pow!",
+      "${noun:Ninja}s are always ${adjective:black}, and they can ${verb:camouflage} in the ${noun:darkness} because they are ${adjective:black}."
+    ],
+    pokemonfacts: [
+      "There's ${noun:a Pokemon} with ${noun:laser}s on his ${noun:back} and he can ${verb:shoot}. He has ${noun:laser}s on his ${noun:hand}s as well. His ${noun:eye}s don't have ${noun:laser}s.",
+      "${noun:Pikachu} is ${adjective:really good}. He gets ${noun:fire}, meaning he can ${verb:shoot fire} out of his hands. He gets ${noun:laser eyes}. If someone ${verb:touches} him, they get ${adjective:electrocuted}.",
+      "There's ${noun:a Pokemon} named ${noun:690}. He's ${noun:a robot}. ${noun:690} is also ${noun:a number} and it's ${adjective:so big} that if you try to count it, you ${verb:die}.",
+      "There's ${noun:a snake Pokemon}. He just is ${noun:a snake}. There's nothing else about him.",
+      "There's ${noun:a Pokemon} named ${noun:Cutter Head}. He can ${verb:cut} things on his ${noun:head}. He's ${noun:a bad guy}.",
+      "There's ${noun:a Pokemon} named ${noun:Shark Head}. He has ${noun:a shark} ${noun:head} and ${noun:a cheetah} body. He has ${noun:spike}s on his ${noun:back}. He has ${noun:special swords}, and he's actually ${noun:a human} who's ${adjective:really strong}. The ${noun:sword}s turn to ${noun:fire} and he can ${verb:slice} ${noun:people}.",
+      "${noun:Star Pikachu} can ${verb:shootlasers} out of his ${noun:body}, and he can ${verb:shoot lasers} all over his ${noun:body}."
+    ],
+    mariofacts: [
+      "Mario is a talented plumber who ca shoot fireballs out of his hands in alternate dimensions with a special flower"
+    ],
+    starwarsfacts: [
+      "${noun:C3-PO} and ${noun:R2-D2} are ${noun:friend}s.",
+      "${noun:C3-PO} and ${noun:R2-D2} are ${noun:droid}s.",
+      "${noun:Darth Maul} ${verb:has} two ${noun:lightsaber}s that ${verb:come} out of his ${noun:lightsaber hilt}.",
+      "${noun:Darth Vader} is ${noun:a good guy} at the ${noun:end} but most of the time he was ${noun:a bad guy} except when he was ${noun:Anakin}",
+      "${noun:Kylo Ren} ${noun:broke} his ${noun:mask} by ${verb:hitting} it on ${noun:a wall} and then ${verb:throwing} it on the ${noun:ground} really hard.",
+      "${noun:Storm Troopers} are just ${noun:people} wearing armor. They do not have ${noun:super powers}.",
+      "${noun:Leia} is ${noun:a princess} ${noun:Jedi}.",
+      "${noun:Darth Vader} ${verb:cut} ${noun:Luke Skywalker}'s ${noun:hand} off."
+    ],
+    superherofacts: [
+      "${noun:Aquaman} is an ${noun:alien} because he ${verb:comes} from the ${noun:water}.",
+      "${noun:Batman} does NOT have ${noun:super powers}. He just ${verb:likes to team up} with the ${noun:other members} of the ${noun:Justice League} that do ${verb:have super powers}.",
+      "${noun:Batman} made the ${noun:ship} that ${noun:Superman} took from ${noun:Krypton} to ${noun:Earth}",
+      "${noun:Cyborg} ${verb:likes to make} ${noun:upgrade}s to the ${noun:Hall of Justice}, and he ${verb:likes} to ${verb:surprise} ${noun:Martian Manhunter}.",
+      "${noun:Power Rangers} ${verb:wear} ${noun:mask}s when they ${verb:fight}.",
+      "${noun:Superman} is an ${noun:alien} because he comes from ${noun:planet Krypton}, but now his ${noun:home} is ${noun:Earth}.",
+      "${noun:Batman} ${verb:throws} ${noun:batarang}s when there's ${noun:bad guys}.",
+      "${noun:Cyborg} makes his ${noun:hand} into ${noun:a fist} to make it into ${noun:a laser}.",
+      "${noun:Green Lantern} makes ${noun:stuff} come out of his ${noun:ring}.",
+      "${noun:Spider Man} ${verb:thwips} out ${noun:web}s when he ${verb:points} his ${noun:finger}s ${adjective:right}.",
+      "${noun:Superman} gets out ${noun:laser eyes} when he gets really ${adjective:angry}.",
+      "${noun:The Dog Man} is ${adjective:very strong} and he's made out of ${noun:Ding-Dong Magoo}.",
+      "When ${noun:Krypton} ${verb:appears}, ${noun:people} ${verb:fly} there to ${verb:live} there.",
+      "When the ${noun:dog} and the ${noun:cop} appeared to ${verb:capture} ${noun:a criminal}, then ${noun:Petey} appeared and it ${verb:turned into} a ${adjective:HUGE} ${noun:explosion} that made the ${noun:dog and the cop} have to go to the ${noun:hospital}, and then the ${noun:nurse} had ${noun:a very good idea}, then they sewed the ${noun:dog's head} onto the ${noun:cop's body}, then he ${verb:turned into} ${noun:The Mighty Dog Man}!",
+      "${noun:Wonder Woman} makes ${noun:anyone} under her ${noun:control}.",
+      "${noun:Dog Man} is ${noun:a dog} who like ${verb:chewing} ${noun:bone}s and the ${noun:cop} and ${noun:Greg} went to ${noun:a bomb} but ${noun:Petey} went to ${verb:rescue} the ${noun:robber} and they got in ${noun:a big explosion} then the ${noun:cop} tried to ${verb:unlock} the ${noun:bomb} and they ${verb:cut} through and it went to ${noun:a big explosion}.",
+      "${noun:Robin} is ${noun:a good guy} who ${verb:likes} to ${verb:learn} how to be ${noun:Nightwing}",
+      "${noun:Plusser Man} is ${noun:a superhero} that needs ${noun:power} for the ${noun:ship} that could ${verb:zap} on the ${noun:other} ${noun:anything} and it could ${verb:ram} and it could do ${noun:a big explosion} and zezezezezezezezezezezezezezezezezez zez zez zezez zez zez zezez zez zez no zez hahahha haha ha ha zez zez zez no ${verb:zeslap} it on ${noun:your face}",
+      "${noun:Spider-Man} can ${verb:shoot} out ${noun:web}s",
+      "${noun:Iron Man} can ${verb:shoot} out ${noun:blast}s.",
+      "${noun:Batman} can ${verb:talk} to ${noun:bat}s.",
+      "${noun:Batman} gets his ${noun:power}s from ${verb:eating} ${noun:bat}s.",
+      "${noun:Toad} and ${noun:Koopa Troopa} are ${noun:friend}s, because they are ${noun:pet}s of each other.",
+      "${noun:Batman} can ${verb:shoot} ${noun:batarang}s out of his ${noun:head}.",
+      "${noun:Superman} can ${verb:slam} his ${noun:face} into the ${noun:ground}, just easily.",
+      "${noun:Ace the Bathound} can ${verb:eat} ${noun:batarang}s."
+    ],
+    worldfacts: [
+      "Some ${noun:robot}s have ${noun:tongue}s.",
+      "Everyone just wants ${noun:a bubble bath} and ${noun:cereal} for ${noun:breakfast}.",
+      "${noun:Coyote}s are ${adjective:real}.",
+      "${noun:Tree}s never ${verb:move}, just from the wind.",
+      "When people ${verb:say} ${verb:pick} up your ${noun:room} it just means ${verb:cleaning up}",
+      "${noun:Car}s have ${noun:tire}s and also ${noun:tire}s belong to ${noun:car}s",
+      "${noun:Flag}s are for states",
+      "${noun:Police}s only ${verb:catches} bad guys OR they could be a stop ${noun:people}.",
+      "You could ${verb:shoot bubbles} out of ${noun:your bubble gun} OR you could do it from a ${adjective:magical} bubble wand",
+      "The best ${noun:food} is ${noun:pho}",
+      "${noun:Vegetable}s make you ${adjective:healthy}",
+      "${noun:Fish} has ${noun:omega 3}. That's a type of ${noun:oil} that's ${adjective:good} for ${noun:your body}.",
+      "${noun:Superhero}es are just from televisions, books and legos",
+      "${noun:Earth} is ${adjective:the best} ${noun:planet}",
+      "${noun:Pluto} is ${adjective:the second best} ${noun:planet.} You could make ${noun:snow mans}",
+      "${noun:Rock}s are ${adjective:hard}. Sometimes you could make them into ${noun:lava}",
+      "${noun:Hard rocks} can make a hard slam when you ${verb:break} them into a ${noun:window}.",
+      "${noun:Glass} is not that ${adjective:hard}. It cracks and if you ${verb:pound} it too hard, the ${noun:window} could ${verb:BREAK}!",
+      "People probably used to think that ${noun:bats} are just really ugly birds."
+    ]
+  };
+
+  // src/lib/run_dictionary.ts
+  function createDictionary(cb, accum) {
+    const data = { ...dictionary_default };
+    const dataKeys = Object.keys(data);
+    for (const kI in dataKeys) {
+      const kSet = dataKeys[kI];
+      for (let sI = 0; sI < data[kSet].length; sI++) {
+        const s5 = data[kSet][sI];
+        const matches = s5.match(/\${\S+:[^}]+}/g);
+        if (matches) {
+          for (const mI in matches) {
+            const m2 = matches[mI];
+            const subMatches = m2.match(/\${(\S+):([^}]+)}/);
+            const kindAndThing = subMatches?.splice(1, 2);
+            if (kindAndThing) {
+              const [kind, thing] = kindAndThing;
+              accum = cb(accum, kSet, kind, thing, sI);
+            }
+          }
+        }
+      }
+    }
+    return { data, dictionary: accum };
+  }
+  var getDictionary = () => createDictionary((accum, _kSet, kind, thing) => {
+    if (accum[kind]) {
+      accum[kind].push(thing);
+    } else {
+      accum[kind] = [];
+      accum[kind].push(thing);
+    }
+    return accum;
+  }, {});
+
   // src/lib/responder.ts
   var ResponderModule = class {
     constructor(services) {
@@ -2716,12 +2845,21 @@ ${description}`;
     }
   };
   var GibberishResponder = class extends ResponderModule {
-    constructor() {
-      super(...arguments);
+    constructor(arg) {
+      super(arg);
       this.name = "default";
+      const { data, dictionary: vocabulary } = getDictionary();
+      this.data = data;
+      this.vocabulary = vocabulary;
+      this.dataKeys = Object.keys(this.data);
+      this.dataKeysLength = this.dataKeys.length;
+      console.log({ data, vcblry: this.vocabulary });
     }
-    getResponse$(input) {
-      return of(`here will be a random ${input} message`);
+    getResponse$() {
+      const randomKey = this.dataKeys[Math.floor(Math.random() * this.dataKeysLength)];
+      const vocabular = this.data[randomKey];
+      const randomString = vocabular[Math.floor(Math.random()) * vocabular.length];
+      return of(randomString);
     }
     keywordCheck() {
       return true;

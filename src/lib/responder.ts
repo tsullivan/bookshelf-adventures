@@ -1,5 +1,11 @@
 import * as Rx from "rxjs";
 import { of } from "rxjs";
+import {
+  Dictionary,
+  DictionaryData,
+  DictionaryKey,
+  getDictionary,
+} from "./run_dictionary";
 
 interface CommandInfo {
   command: string;
@@ -16,6 +22,10 @@ export abstract class ResponderModule {
   public abstract readonly name: string;
   public abstract getResponse$(input: string): Rx.Observable<string | false>;
   public abstract keywordCheck(inputString: string): boolean;
+}
+
+function sample<T>(arr: Array<T>) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 class HelpResponder extends ResponderModule {
@@ -45,8 +55,31 @@ class RepeatResponder extends ResponderModule {
 }
 class GibberishResponder extends ResponderModule {
   name = "default";
-  getResponse$(input: string) {
-    return of(`here will be a random ${input} message`);
+  private data: DictionaryData;
+  private vocabulary: Dictionary;
+  private dataKeys: DictionaryKey[];
+
+  constructor(arg: GameServices) {
+    super(arg);
+    const { data, dictionary: vocabulary } = getDictionary();
+    this.data = data;
+    this.vocabulary = vocabulary;
+    this.dataKeys = Object.keys(this.data);
+
+    console.log({ data, vcblry: this.vocabulary });
+  }
+  getResponse$() {
+    const randomKey = sample(this.dataKeys);
+    const vocabular = this.data[randomKey];
+    const randomString = sample(vocabular);
+
+    const vocabParts = randomString.match(/\${([^}]+)}/g);
+    vocabParts?.forEach(v => {
+      const vPieces = v.match(/\${([^:]+):([^}]+)}/)
+      console.log({ vPieces })
+    })
+
+    return of(randomString);
   }
   public keywordCheck() {
     return true;

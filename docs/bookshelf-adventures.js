@@ -2774,14 +2774,13 @@
     ]
   };
 
-  // src/lib/run_dictionary.ts
+  // src/lib/dictionary.ts
   function createDictionary(cb, accum) {
-    const data = { ...dictionary_default };
-    const dataKeys = Object.keys(data);
+    const dataKeys = Object.keys(dictionary_default);
     for (const kI in dataKeys) {
       const kSet = dataKeys[kI];
-      for (let sI = 0; sI < data[kSet].length; sI++) {
-        const s5 = data[kSet][sI];
+      for (let sI = 0; sI < dictionary_default[kSet].length; sI++) {
+        const s5 = dictionary_default[kSet][sI];
         const matches = s5.match(/\${\S+:[^}]+}/g);
         if (matches) {
           for (const mI in matches) {
@@ -2796,7 +2795,7 @@
         }
       }
     }
-    return { data, dictionary: accum };
+    return { dictionary: dictionary_default, vocabulary: accum };
   }
   var getDictionary = () => createDictionary((accum, _kSet, kind, thing) => {
     if (accum[kind]) {
@@ -2814,6 +2813,9 @@
       this.services = services;
     }
   };
+  function sample(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
   var HelpResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
@@ -2848,17 +2850,20 @@ ${description}`;
     constructor(arg) {
       super(arg);
       this.name = "default";
-      const { data, dictionary: vocabulary } = getDictionary();
-      this.data = data;
+      const { dictionary, vocabulary } = getDictionary();
+      this.data = dictionary;
       this.vocabulary = vocabulary;
       this.dataKeys = Object.keys(this.data);
-      this.dataKeysLength = this.dataKeys.length;
-      console.log({ data, vcblry: this.vocabulary });
     }
     getResponse$() {
-      const randomKey = this.dataKeys[Math.floor(Math.random() * this.dataKeysLength)];
+      const randomKey = sample(this.dataKeys);
       const vocabular = this.data[randomKey];
-      const randomString = vocabular[Math.floor(Math.random()) * vocabular.length];
+      const randomString = sample(vocabular);
+      const vocabParts = randomString.match(/\${([^}]+)}/g);
+      vocabParts?.forEach((v2) => {
+        const vPieces = v2.match(/\${([^:]+):([^}]+)}/);
+        console.log({ vPieces });
+      });
       return of(randomString);
     }
     keywordCheck() {

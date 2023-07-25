@@ -2,10 +2,10 @@ import * as Rx from "rxjs";
 import { of } from "rxjs";
 import {
   Dictionary,
-  DictionaryData,
   DictionaryKey,
+  Vocabulary,
   getDictionary,
-} from "./run_dictionary";
+} from "./dictionary";
 
 interface CommandInfo {
   command: string;
@@ -55,30 +55,21 @@ class RepeatResponder extends ResponderModule {
 }
 class GibberishResponder extends ResponderModule {
   name = "default";
-  private data: DictionaryData;
-  private vocabulary: Dictionary;
+  private data: Dictionary;
+  private vocabulary: Vocabulary;
   private dataKeys: DictionaryKey[];
 
   constructor(arg: GameServices) {
     super(arg);
-    const { data, dictionary: vocabulary } = getDictionary();
-    this.data = data;
+    const { dictionary, vocabulary } = getDictionary();
+    this.data = dictionary;
     this.vocabulary = vocabulary;
-    this.dataKeys = Object.keys(this.data);
-
-    console.log({ data, vcblry: this.vocabulary });
+    this.dataKeys = Object.keys(this.data) as DictionaryKey[];
   }
   getResponse$() {
     const randomKey = sample(this.dataKeys);
     const vocabular = this.data[randomKey];
     const randomString = sample(vocabular);
-
-    const vocabParts = randomString.match(/\${([^}]+)}/g);
-    vocabParts?.forEach(v => {
-      const vPieces = v.match(/\${([^:]+):([^}]+)}/)
-      console.log({ vPieces })
-    })
-
     return of(randomString);
   }
   public keywordCheck() {

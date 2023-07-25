@@ -1,31 +1,27 @@
 import dictionary from "./dictionary.json";
 
-export type DictionaryKey = string;
+export type Dictionary = typeof dictionary;
+export type DictionaryKey = keyof Dictionary;
+export type Vocabulary = Record<string, string[]>;
 
-export type DictionaryData = Record<DictionaryKey, string[]>;
-
-export interface Dictionary {
-  [key: DictionaryKey]: string[];
-}
 type ReduceCallback = (
-  accum: Dictionary,
+  accum: Vocabulary,
   kSet: string,
   kind: string,
   thing: string,
   index: number
-) => Dictionary;
+) => Vocabulary;
 
 function createDictionary(
   cb: ReduceCallback,
-  accum: Dictionary
-): { data: DictionaryData; dictionary: Dictionary } {
-  const data: DictionaryData = { ...dictionary };
-  const dataKeys: Array<keyof typeof data> = Object.keys(data);
+  accum: Vocabulary
+): { dictionary: Dictionary; vocabulary: Vocabulary } {
+  const dataKeys = Object.keys(dictionary);
   for (const kI in dataKeys) {
-    const kSet = dataKeys[kI];
+    const kSet = dataKeys[kI] as DictionaryKey;
 
-    for (let sI = 0; sI < data[kSet].length; sI++) {
-      const s = data[kSet][sI];
+    for (let sI = 0; sI < dictionary[kSet].length; sI++) {
+      const s = dictionary[kSet][sI];
       const matches = s.match(/\${\S+:[^}]+}/g);
       if (matches) {
         for (const mI in matches) {
@@ -40,7 +36,7 @@ function createDictionary(
       }
     }
   }
-  return { data, dictionary: accum };
+  return { dictionary, vocabulary: accum };
 }
 
 export const getDictionary = () =>

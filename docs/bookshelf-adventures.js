@@ -1703,190 +1703,6 @@
     return ReplaySubject2;
   }(Subject);
 
-  // node_modules/rxjs/dist/esm5/internal/scheduler/Action.js
-  var Action = function(_super) {
-    __extends(Action2, _super);
-    function Action2(scheduler, work) {
-      return _super.call(this) || this;
-    }
-    Action2.prototype.schedule = function(state, delay2) {
-      if (delay2 === void 0) {
-        delay2 = 0;
-      }
-      return this;
-    };
-    return Action2;
-  }(Subscription);
-
-  // node_modules/rxjs/dist/esm5/internal/scheduler/intervalProvider.js
-  var intervalProvider = {
-    setInterval: function(handler, timeout) {
-      var args = [];
-      for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-      }
-      var delegate = intervalProvider.delegate;
-      if (delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) {
-        return delegate.setInterval.apply(delegate, __spreadArray([handler, timeout], __read(args)));
-      }
-      return setInterval.apply(void 0, __spreadArray([handler, timeout], __read(args)));
-    },
-    clearInterval: function(handle) {
-      var delegate = intervalProvider.delegate;
-      return ((delegate === null || delegate === void 0 ? void 0 : delegate.clearInterval) || clearInterval)(handle);
-    },
-    delegate: void 0
-  };
-
-  // node_modules/rxjs/dist/esm5/internal/scheduler/AsyncAction.js
-  var AsyncAction = function(_super) {
-    __extends(AsyncAction2, _super);
-    function AsyncAction2(scheduler, work) {
-      var _this = _super.call(this, scheduler, work) || this;
-      _this.scheduler = scheduler;
-      _this.work = work;
-      _this.pending = false;
-      return _this;
-    }
-    AsyncAction2.prototype.schedule = function(state, delay2) {
-      var _a;
-      if (delay2 === void 0) {
-        delay2 = 0;
-      }
-      if (this.closed) {
-        return this;
-      }
-      this.state = state;
-      var id = this.id;
-      var scheduler = this.scheduler;
-      if (id != null) {
-        this.id = this.recycleAsyncId(scheduler, id, delay2);
-      }
-      this.pending = true;
-      this.delay = delay2;
-      this.id = (_a = this.id) !== null && _a !== void 0 ? _a : this.requestAsyncId(scheduler, this.id, delay2);
-      return this;
-    };
-    AsyncAction2.prototype.requestAsyncId = function(scheduler, _id, delay2) {
-      if (delay2 === void 0) {
-        delay2 = 0;
-      }
-      return intervalProvider.setInterval(scheduler.flush.bind(scheduler, this), delay2);
-    };
-    AsyncAction2.prototype.recycleAsyncId = function(_scheduler, id, delay2) {
-      if (delay2 === void 0) {
-        delay2 = 0;
-      }
-      if (delay2 != null && this.delay === delay2 && this.pending === false) {
-        return id;
-      }
-      if (id != null) {
-        intervalProvider.clearInterval(id);
-      }
-      return void 0;
-    };
-    AsyncAction2.prototype.execute = function(state, delay2) {
-      if (this.closed) {
-        return new Error("executing a cancelled action");
-      }
-      this.pending = false;
-      var error = this._execute(state, delay2);
-      if (error) {
-        return error;
-      } else if (this.pending === false && this.id != null) {
-        this.id = this.recycleAsyncId(this.scheduler, this.id, null);
-      }
-    };
-    AsyncAction2.prototype._execute = function(state, _delay) {
-      var errored = false;
-      var errorValue;
-      try {
-        this.work(state);
-      } catch (e7) {
-        errored = true;
-        errorValue = e7 ? e7 : new Error("Scheduled action threw falsy error");
-      }
-      if (errored) {
-        this.unsubscribe();
-        return errorValue;
-      }
-    };
-    AsyncAction2.prototype.unsubscribe = function() {
-      if (!this.closed) {
-        var _a = this, id = _a.id, scheduler = _a.scheduler;
-        var actions = scheduler.actions;
-        this.work = this.state = this.scheduler = null;
-        this.pending = false;
-        arrRemove(actions, this);
-        if (id != null) {
-          this.id = this.recycleAsyncId(scheduler, id, null);
-        }
-        this.delay = null;
-        _super.prototype.unsubscribe.call(this);
-      }
-    };
-    return AsyncAction2;
-  }(Action);
-
-  // node_modules/rxjs/dist/esm5/internal/Scheduler.js
-  var Scheduler = function() {
-    function Scheduler2(schedulerActionCtor, now) {
-      if (now === void 0) {
-        now = Scheduler2.now;
-      }
-      this.schedulerActionCtor = schedulerActionCtor;
-      this.now = now;
-    }
-    Scheduler2.prototype.schedule = function(work, delay2, state) {
-      if (delay2 === void 0) {
-        delay2 = 0;
-      }
-      return new this.schedulerActionCtor(this, work).schedule(state, delay2);
-    };
-    Scheduler2.now = dateTimestampProvider.now;
-    return Scheduler2;
-  }();
-
-  // node_modules/rxjs/dist/esm5/internal/scheduler/AsyncScheduler.js
-  var AsyncScheduler = function(_super) {
-    __extends(AsyncScheduler2, _super);
-    function AsyncScheduler2(SchedulerAction, now) {
-      if (now === void 0) {
-        now = Scheduler.now;
-      }
-      var _this = _super.call(this, SchedulerAction, now) || this;
-      _this.actions = [];
-      _this._active = false;
-      return _this;
-    }
-    AsyncScheduler2.prototype.flush = function(action) {
-      var actions = this.actions;
-      if (this._active) {
-        actions.push(action);
-        return;
-      }
-      var error;
-      this._active = true;
-      do {
-        if (error = action.execute(action.state, action.delay)) {
-          break;
-        }
-      } while (action = actions.shift());
-      this._active = false;
-      if (error) {
-        while (action = actions.shift()) {
-          action.unsubscribe();
-        }
-        throw error;
-      }
-    };
-    return AsyncScheduler2;
-  }(Scheduler);
-
-  // node_modules/rxjs/dist/esm5/internal/scheduler/async.js
-  var asyncScheduler = new AsyncScheduler(AsyncAction);
-  var async = asyncScheduler;
-
   // node_modules/rxjs/dist/esm5/internal/observable/empty.js
   var EMPTY = new Observable(function(subscriber) {
     return subscriber.complete();
@@ -2138,9 +1954,9 @@
   }
 
   // node_modules/rxjs/dist/esm5/internal/util/executeSchedule.js
-  function executeSchedule(parentSubscription, scheduler, work, delay2, repeat) {
-    if (delay2 === void 0) {
-      delay2 = 0;
+  function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
+    if (delay === void 0) {
+      delay = 0;
     }
     if (repeat === void 0) {
       repeat = false;
@@ -2148,11 +1964,11 @@
     var scheduleSubscription = scheduler.schedule(function() {
       work();
       if (repeat) {
-        parentSubscription.add(this.schedule(null, delay2));
+        parentSubscription.add(this.schedule(null, delay));
       } else {
         this.unsubscribe();
       }
-    }, delay2);
+    }, delay);
     parentSubscription.add(scheduleSubscription);
     if (!repeat) {
       return scheduleSubscription;
@@ -2160,36 +1976,36 @@
   }
 
   // node_modules/rxjs/dist/esm5/internal/operators/observeOn.js
-  function observeOn(scheduler, delay2) {
-    if (delay2 === void 0) {
-      delay2 = 0;
+  function observeOn(scheduler, delay) {
+    if (delay === void 0) {
+      delay = 0;
     }
     return operate(function(source, subscriber) {
       source.subscribe(createOperatorSubscriber(subscriber, function(value) {
         return executeSchedule(subscriber, scheduler, function() {
           return subscriber.next(value);
-        }, delay2);
+        }, delay);
       }, function() {
         return executeSchedule(subscriber, scheduler, function() {
           return subscriber.complete();
-        }, delay2);
+        }, delay);
       }, function(err) {
         return executeSchedule(subscriber, scheduler, function() {
           return subscriber.error(err);
-        }, delay2);
+        }, delay);
       }));
     });
   }
 
   // node_modules/rxjs/dist/esm5/internal/operators/subscribeOn.js
-  function subscribeOn(scheduler, delay2) {
-    if (delay2 === void 0) {
-      delay2 = 0;
+  function subscribeOn(scheduler, delay) {
+    if (delay === void 0) {
+      delay = 0;
     }
     return operate(function(source, subscriber) {
       subscriber.add(scheduler.schedule(function() {
         return source.subscribe(subscriber);
-      }, delay2));
+      }, delay));
     });
   }
 
@@ -2315,11 +2131,6 @@
     return from(args, scheduler);
   }
 
-  // node_modules/rxjs/dist/esm5/internal/util/isDate.js
-  function isValidDate(value) {
-    return value instanceof Date && !isNaN(value);
-  }
-
   // node_modules/rxjs/dist/esm5/internal/operators/map.js
   function map(project, thisArg) {
     return operate(function(source, subscriber) {
@@ -2417,55 +2228,6 @@
     return mergeMap(identity, concurrent);
   }
 
-  // node_modules/rxjs/dist/esm5/internal/operators/concatAll.js
-  function concatAll() {
-    return mergeAll(1);
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/observable/concat.js
-  function concat() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
-    }
-    return concatAll()(from(args, popScheduler(args)));
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/observable/timer.js
-  function timer(dueTime, intervalOrScheduler, scheduler) {
-    if (dueTime === void 0) {
-      dueTime = 0;
-    }
-    if (scheduler === void 0) {
-      scheduler = async;
-    }
-    var intervalDuration = -1;
-    if (intervalOrScheduler != null) {
-      if (isScheduler(intervalOrScheduler)) {
-        scheduler = intervalOrScheduler;
-      } else {
-        intervalDuration = intervalOrScheduler;
-      }
-    }
-    return new Observable(function(subscriber) {
-      var due = isValidDate(dueTime) ? +dueTime - scheduler.now() : dueTime;
-      if (due < 0) {
-        due = 0;
-      }
-      var n7 = 0;
-      return scheduler.schedule(function() {
-        if (!subscriber.closed) {
-          subscriber.next(n7++);
-          if (0 <= intervalDuration) {
-            this.schedule(void 0, intervalDuration);
-          } else {
-            subscriber.complete();
-          }
-        }
-      }, due);
-    });
-  }
-
   // node_modules/rxjs/dist/esm5/internal/observable/merge.js
   function merge() {
     var args = [];
@@ -2502,43 +2264,6 @@
           }
         }
       }));
-    });
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/operators/ignoreElements.js
-  function ignoreElements() {
-    return operate(function(source, subscriber) {
-      source.subscribe(createOperatorSubscriber(subscriber, noop));
-    });
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/operators/mapTo.js
-  function mapTo(value) {
-    return map(function() {
-      return value;
-    });
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/operators/delayWhen.js
-  function delayWhen(delayDurationSelector, subscriptionDelay) {
-    if (subscriptionDelay) {
-      return function(source) {
-        return concat(subscriptionDelay.pipe(take(1), ignoreElements()), source.pipe(delayWhen(delayDurationSelector)));
-      };
-    }
-    return mergeMap(function(value, index) {
-      return innerFrom(delayDurationSelector(value, index)).pipe(take(1), mapTo(value));
-    });
-  }
-
-  // node_modules/rxjs/dist/esm5/internal/operators/delay.js
-  function delay(due, scheduler) {
-    if (scheduler === void 0) {
-      scheduler = asyncScheduler;
-    }
-    var duration = timer(due, scheduler);
-    return delayWhen(function() {
-      return duration;
     });
   }
 
@@ -2614,7 +2339,7 @@
       this.input$ = new ReplaySubject();
     }
     addChat(chat) {
-      this.chats = this.chats.concat(chat);
+      this.chats = [chat].concat(this.chats);
     }
     getInput$() {
       return this.input$.asObservable();
@@ -2807,15 +2532,30 @@
     return accum;
   }, {});
 
+  // src/lib/utils.ts
+  function sample(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  function shuffle(array) {
+    const finalArray = [...array];
+    let currentIndex = array.length;
+    while (currentIndex != 0) {
+      const randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [finalArray[currentIndex], finalArray[randomIndex]] = [
+        finalArray[randomIndex],
+        finalArray[currentIndex]
+      ];
+    }
+    return finalArray;
+  }
+
   // src/lib/responder.ts
   var ResponderModule = class {
     constructor(services) {
       this.services = services;
     }
   };
-  function sample(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
   var HelpResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
@@ -2853,18 +2593,36 @@ ${description}`;
       const { dictionary, vocabulary } = getDictionary();
       this.data = dictionary;
       this.vocabulary = vocabulary;
-      this.dataKeys = Object.keys(this.data);
     }
-    getResponse$() {
-      const randomKey = sample(this.dataKeys);
-      const vocabular = this.data[randomKey];
-      const randomString = sample(vocabular);
-      const vocabParts = randomString.match(/\${([^}]+)}/g);
-      vocabParts?.forEach((v2) => {
-        const vPieces = v2.match(/\${([^:]+):([^}]+)}/);
-        console.log({ vPieces });
-      });
-      return of(randomString);
+    getResponse$(rawInput) {
+      const input = rawInput.trim().toLowerCase();
+      const texts = shuffle(Object.values(this.data).flatMap((text) => text));
+      let source;
+      for (const s5 of texts) {
+        console.log(`match? [${s5}] ${input}: ${s5.toLowerCase().includes(input)}`);
+        if (s5.toLowerCase().includes(input)) {
+          console.log(`matched text ${input} in ${s5}`);
+          source = s5;
+          break;
+        }
+      }
+      if (!source) {
+        source = texts[0];
+      }
+      const matches = source.match(/\${\S+:[^}]+}/g);
+      if (matches) {
+        for (const mI in matches) {
+          const m2 = matches[mI];
+          const subMatches = m2.match(/\${(\S+):([^}]+)}/);
+          if (subMatches) {
+            const [kind, thing] = subMatches.splice(1, 2);
+            const nextThing = thing.toLowerCase().includes(input) ? thing : sample(this.vocabulary[kind]);
+            console.log(`replace ${m2} with ${nextThing}`);
+            source = source.replace(m2, nextThing);
+          }
+        }
+      }
+      return of(source);
     }
     keywordCheck() {
       return true;
@@ -2951,6 +2709,12 @@ ${description}`;
     start() {
       this.log(LOG_DEBUG, "in start");
       this.writeOutput("Hello! What is your name?");
+      this.input$.pipe(
+        tap((input) => {
+          const utterance = new SpeechSynthesisUtterance(input);
+          this.deps.synth.speak(utterance);
+        })
+      ).subscribe();
       const takeName$ = this.input$.pipe(
         take(1),
         map((name) => {
@@ -2966,13 +2730,7 @@ ${description}`;
           return response$;
         })
       );
-      merge(takeName$, takeChats$).pipe(
-        tap((outputStr) => {
-          console.log({ outputStr });
-        }),
-        filter(Boolean),
-        delay(1e3)
-      ).subscribe((outputStr) => {
+      merge(takeName$, takeChats$).pipe(filter(Boolean)).subscribe((outputStr) => {
         if (!this._isMuted) {
           const utterance = new SpeechSynthesisUtterance(outputStr);
           this.deps.synth.speak(utterance);

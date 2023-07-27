@@ -20,7 +20,7 @@ export class Adventure extends LitElement {
   private input$ = new Rx.ReplaySubject<string>();
 
   public addChat(chat: ChatMessage) {
-    this.chats = this.chats.concat(chat);
+    this.chats = [chat].concat(this.chats);
   }
 
   public getInput$() {

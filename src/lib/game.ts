@@ -1,5 +1,5 @@
 import * as Rx from "rxjs";
-import { delay, filter, map, skip, switchMap, take, tap } from "rxjs/operators";
+import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
 import { GameServices, Responder } from "./responder";
 import { User } from "./user";
 
@@ -62,6 +62,16 @@ export class Game {
     // begin chats
     this.writeOutput("Hello! What is your name?");
 
+    this.input$
+      .pipe(
+        tap((input) => {
+          // FIXME: auto cancellation if the user starts typing again
+          const utterance = new SpeechSynthesisUtterance(input);
+          this.deps.synth.speak(utterance);
+        })
+      )
+      .subscribe();
+
     const takeName$ = this.input$.pipe(
       take(1),
       map((name) => {
@@ -81,13 +91,7 @@ export class Game {
     );
 
     Rx.merge(takeName$, takeChats$)
-      .pipe(
-        tap((outputStr) => {
-          console.log({ outputStr });
-        }),
-        filter(Boolean),
-        delay(1000)
-      )
+      .pipe(filter(Boolean))
       .subscribe((outputStr) => {
         if (!this._isMuted) {
           // FIXME: auto cancellation if the user starts typing again

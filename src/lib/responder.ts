@@ -1,11 +1,7 @@
 import * as Rx from "rxjs";
 import { of } from "rxjs";
-import {
-  Dictionary,
-  DictionaryKey,
-  Vocabulary,
-  getDictionary,
-} from "./dictionary";
+import { Dictionary, Vocabulary, getDictionary } from "./dictionary";
+import { sample, shuffle } from "./utils";
 
 interface CommandInfo {
   command: string;
@@ -22,10 +18,6 @@ export abstract class ResponderModule {
   public abstract readonly name: string;
   public abstract getResponse$(input: string): Rx.Observable<string | false>;
   public abstract keywordCheck(inputString: string): boolean;
-}
-
-function sample<T>(arr: Array<T>) {
-  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 class HelpResponder extends ResponderModule {
@@ -57,20 +49,51 @@ class GibberishResponder extends ResponderModule {
   name = "default";
   private data: Dictionary;
   private vocabulary: Vocabulary;
-  private dataKeys: DictionaryKey[];
 
   constructor(arg: GameServices) {
     super(arg);
     const { dictionary, vocabulary } = getDictionary();
     this.data = dictionary;
     this.vocabulary = vocabulary;
-    this.dataKeys = Object.keys(this.data) as DictionaryKey[];
   }
-  getResponse$() {
-    const randomKey = sample(this.dataKeys);
-    const vocabular = this.data[randomKey];
-    const randomString = sample(vocabular);
-    return of(randomString);
+  getResponse$(rawInput: string) {
+    const input = rawInput.trim().toLowerCase();
+
+    // search the dictionary data in a random order
+    const texts = shuffle(Object.values(this.data).flatMap((text) => text));
+    let source: string | undefined;
+    for (const s of texts) {
+      console.log(`match? [${s}] ${input}: ${s.toLowerCase().includes(input)}`);
+      if (s.toLowerCase().includes(input)) {
+        // match of user input
+        console.log(`matched text ${input} in ${s}`);
+        source = s;
+        break;
+      }
+    }
+    if (!source) {
+      source = texts[0];
+    }
+
+    // replace template
+    const matches = source.match(/\${\S+:[^}]+}/g);
+    if (matches) {
+      for (const mI in matches) {
+        const m = matches[mI];
+        const subMatches = m.match(/\${(\S+):([^}]+)}/);
+        if (subMatches) {
+          const [kind, thing] = subMatches.splice(1, 2);
+          const nextThing = thing.toLowerCase().includes(input)
+            ? thing
+            : sample(this.vocabulary[kind]);
+
+          console.log(`replace ${m} with ${nextThing}`);
+          source = source.replace(m, nextThing);
+        }
+      }
+    }
+
+    return of(source);
   }
   public keywordCheck() {
     return true;

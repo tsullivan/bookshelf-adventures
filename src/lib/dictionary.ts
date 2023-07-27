@@ -1,8 +1,9 @@
 import dictionary from "./dictionary.json";
 
 export type Dictionary = typeof dictionary;
-export type DictionaryKey = keyof Dictionary;
 export type Vocabulary = Record<string, string[]>;
+
+type DictionaryKey = keyof Dictionary;
 
 type ReduceCallback = (
   accum: Vocabulary,

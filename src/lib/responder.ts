@@ -16,12 +16,14 @@ export interface GameServices {
 export abstract class ResponderModule {
   constructor(protected services: GameServices) {}
   public abstract readonly name: string;
+  public abstract readonly description: string;
   public abstract getResponse$(input: string): Rx.Observable<string | false>;
   public abstract keywordCheck(inputString: string): boolean;
 }
 
 class HelpResponder extends ResponderModule {
   name = "help";
+  description = "This gets you help information."
   getResponse$() {
     return of(
       this.services
@@ -33,11 +35,12 @@ class HelpResponder extends ResponderModule {
     );
   }
   public keywordCheck(inputString: string) {
-    return inputString.match(/^help\b/) !== null;
+    return inputString.match(/^help|what$/) !== null;
   }
 }
 class RepeatResponder extends ResponderModule {
   name = "repeat";
+  description = "This repeats something."
   getResponse$(input: string) {
     return of(`here I will repeat ${input} as many times as you want`);
   }
@@ -47,6 +50,7 @@ class RepeatResponder extends ResponderModule {
 }
 class GibberishResponder extends ResponderModule {
   name = "default";
+  description = "Mad-libs like gibberish"
   private data: Dictionary;
   private vocabulary: Vocabulary;
 
@@ -101,6 +105,7 @@ class GibberishResponder extends ResponderModule {
 }
 class MuteUnmuteResponder extends ResponderModule {
   name = "mute_unmute";
+  description = "Makes the speaking that you hear stop or start again"
   private _isMuted = false;
   getResponse$(command: string) {
     command = command.toLowerCase();
@@ -143,7 +148,7 @@ export class Responder {
 
   public getCommands(): CommandInfo[] {
     return this.modules.map((m) => {
-      return { command: m.name, description: "TBD" };
+      return { command: m.name, description: m.description };
     });
   }
 }

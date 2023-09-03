@@ -6,7 +6,11 @@ import { User } from "./user";
 const PROTAGONIST = "Shelfie";
 
 export interface GameDeps {
-  synth: { speak: SpeechSynthesis["speak"] };
+  synth: {
+    speak: SpeechSynthesis["speak"];
+    cancel: SpeechSynthesis["cancel"];
+    getVoices: SpeechSynthesis["getVoices"];
+  };
   user: User;
 }
 
@@ -65,8 +69,8 @@ export class Game {
     this.input$
       .pipe(
         tap((input) => {
-          // FIXME: auto cancellation if the user starts typing again
           const utterance = new SpeechSynthesisUtterance(input);
+          this.deps.synth.cancel();
           this.deps.synth.speak(utterance);
         })
       )

@@ -10,6 +10,7 @@ interface CommandInfo {
 
 export interface GameServices {
   getCommands: () => CommandInfo[];
+  getVoices: SpeechSynthesis["getVoices"];
   setIsMuted: (value: boolean) => void;
 }
 
@@ -23,7 +24,7 @@ export abstract class ResponderModule {
 
 class HelpResponder extends ResponderModule {
   name = "help";
-  description = "This gets you help information."
+  description = "This gets you help information.";
   getResponse$() {
     return of(
       this.services
@@ -35,14 +36,14 @@ class HelpResponder extends ResponderModule {
     );
   }
   public keywordCheck(inputString: string) {
-    return inputString.match(/^help|what$/) !== null;
+    return inputString.match(/^(help|what)$/) !== null;
   }
 }
 class RepeatResponder extends ResponderModule {
   name = "repeat";
-  description = "This repeats something."
+  description = "This repeats something.";
   getResponse$(input: string) {
-    return of(`here I will repeat ${input} as many times as you want`);
+    return of(input.replace(/^repeat /, ''));
   }
   public keywordCheck(inputString: string) {
     return inputString.match(/^repeat\b/) !== null;
@@ -50,10 +51,9 @@ class RepeatResponder extends ResponderModule {
 }
 class GibberishResponder extends ResponderModule {
   name = "default";
-  description = "Mad-libs like gibberish"
+  description = "Mad-libs like gibberish";
   private data: Dictionary;
   private vocabulary: Vocabulary;
-
   constructor(arg: GameServices) {
     super(arg);
     const { dictionary, vocabulary } = getDictionary();
@@ -62,7 +62,6 @@ class GibberishResponder extends ResponderModule {
   }
   getResponse$(rawInput: string) {
     const input = rawInput.trim().toLowerCase();
-
     // search the dictionary data in a random order
     const texts = shuffle(Object.values(this.data).flatMap((text) => text));
     let source: string | undefined;
@@ -78,7 +77,6 @@ class GibberishResponder extends ResponderModule {
     if (!source) {
       source = texts[0];
     }
-
     // replace template
     const matches = source.match(/\${\S+:[^}]+}/g);
     if (matches) {
@@ -96,16 +94,26 @@ class GibberishResponder extends ResponderModule {
         }
       }
     }
-
     return of(source);
   }
   public keywordCheck() {
     return true;
   }
 }
+class VoicesResponder extends ResponderModule {
+  name = "get_voices";
+  description = "get a list of the voices that can be used to hear the text";
+  getResponse$() {
+    const voices = this.services.getVoices();
+    return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
+  }
+  keywordCheck(inputString: string) {
+    return inputString.match(/^(get_voices|voices)$/) !== null;
+  }
+}
 class MuteUnmuteResponder extends ResponderModule {
   name = "mute_unmute";
-  description = "Makes the speaking that you hear stop or start again"
+  description = "Makes the speaking that you hear stop or start again";
   private _isMuted = false;
   getResponse$(command: string) {
     command = command.toLowerCase();
@@ -129,7 +137,8 @@ export class Responder {
     this.addResponder(new HelpResponder(services));
     this.addResponder(new MuteUnmuteResponder(services));
     this.addResponder(new RepeatResponder(services));
-    this.addResponder(new GibberishResponder(services));
+    this.addResponder(new VoicesResponder(services));
+    this.addResponder(new GibberishResponder(services)); // must be last
   }
 
   private addResponder(module: ResponderModule) {

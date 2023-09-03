@@ -34,6 +34,9 @@ export class Game {
     getCommands: () => {
       return this.responder.getCommands();
     },
+    getVoices: () => {
+      return this.deps.synth.getVoices();
+    },
   };
 
   constructor(

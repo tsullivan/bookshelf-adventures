@@ -1,6 +1,6 @@
 import * as Rx from "rxjs";
 import { of } from "rxjs";
-import { Dictionary, Vocabulary, getDictionary } from "./dictionary";
+import { Vocabulary, getDictionary } from "./dictionary";
 import { sample, shuffle } from "./utils";
 
 interface CommandInfo {
@@ -52,18 +52,17 @@ class RepeatResponder extends ResponderModule {
 class GibberishResponder extends ResponderModule {
   name = "default";
   description = "Mad-libs like gibberish";
-  private data: Dictionary;
   private vocabulary: Vocabulary;
   constructor(arg: GameServices) {
     super(arg);
-    const { dictionary, vocabulary } = getDictionary();
-    this.data = dictionary;
+    const { vocabulary } = getDictionary();
     this.vocabulary = vocabulary;
   }
   getResponse$(rawInput: string) {
     const input = rawInput.trim().toLowerCase();
+    const { dictionary } = getDictionary();
     // search the dictionary data in a random order
-    const texts = shuffle(Object.values(this.data).flatMap((text) => text));
+    const texts = shuffle(Object.values(dictionary).flatMap((text) => text));
     let source: string | undefined;
     for (const s of texts) {
       console.log(`match? [${s}] ${input}: ${s.toLowerCase().includes(input)}`);

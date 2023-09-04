@@ -2407,9 +2407,9 @@
   // src/lib/dictionary.json
   var dictionary_default = {
     jokes: [
-      "Knock-Knock\nWho's ${adjective:there}?\n${noun:Atch}.\n${noun:Atch} who?\n${verb:Bless} you!",
-      "Knock-Knock\nWho's ${adjective:there}?\n${noun:Heywood}.\n${noun:Heywood} who?\n${noun:Heywood} you let me in? It's ${adjective:cold} out here!!",
-      "Knock-Knock\nWho's ${adjective:there}?\nI am ${noun:Groot}.\nI am ${noun:Groot} who?\nI am ${noun:Groot}!",
+      "Knock-Knock\nWho's there?\n${noun:Atch}.\n${noun:Atch} who?\n${verb:Bless} you!",
+      "Knock-Knock\nWho's there?\n${noun:Heywood}.\n${noun:Heywood} who?\n${noun:Heywood} you let me in? It's ${adjective:cold} out here!!",
+      "Knock-Knock\nWho's there?\nI am ${noun:Groot}.\nI am ${noun:Groot} who?\nI am ${noun:Groot}!",
       "Why did I ${verb:throw} ${noun:a human} out of the ${noun:guard tower} ${noun:window}?\nBecause he was ${adjective:fired}.",
       "Why did the man ${verb:throw} ${noun:a butterfly} out of the ${noun:window}?\nBecause he wanted it to be able to ${verb:smell} around the ${noun:world}!",
       "Why did the man ${verb:throw} ${noun:a window} out that ${noun:window}?\nBecause he wanted it to ${verb:crash}!",
@@ -2417,7 +2417,10 @@
       "${noun:Batman} told to ${noun:Robin} did you ${verb:splat} ${noun:your underwear} in ${noun:your face} then ${noun:Robin} ${verb:said} yeah I do ${verb:splat} and a blah blah blah blah blah blah wid de de no no no no n o noooooooooo yes hj",
       "we jbmgjvjbjgugufufufydyfhfhghggufhgjghghhhhjgfghuhigfuiop90ol.",
       "4r$#F%ttTttTTttTTttTTttTttTTttTTttTTttTTttTTtTTttTTttTTtTTttTTtTTTtTTtTTTTTTTTTG%%OOOOOOOOOOOOOOOOOoooooooooooooooOOOOOOOOOOOOOOOPPPPPPPPPPPPPppppppppppppppPPPPPPPPPPPPPPPPPPPPSSSSSSSSSSSSSSssssssssssSSSSSSSSSsssSSRRRRRRRRRRRRrrrrrrrr",
-      "What is ${noun:Thor}'s ${adjective:favorite} ${noun:food}?\nThortilla ${noun:chip}s. q2<F3>=]"
+      "What is ${noun:Thor}'s ${adjective:favorite} ${noun:food}?\nThortilla ${noun:chip}s. q2<F3>=]",
+      "Why did the elephant cross the road? Because it was programmed by the chicken.",
+      "Why did the person who was often afraid of things cross the road? Because that person was known as a chicken.",
+      "Why did the chicken cross the playground? To get to the other slide."
     ],
     ninjafacts: [
       "${noun:Ninja}s have ${noun:sword}s",
@@ -2436,7 +2439,17 @@
       "${noun:Star Pikachu} can ${verb:shootlasers} out of his ${noun:body}, and he can ${verb:shoot lasers} all over his ${noun:body}."
     ],
     mariofacts: [
-      "Mario is a talented plumber who ca shoot fireballs out of his hands in alternate dimensions with a special flower"
+      "${noun:Mario} is a ${adjective:talented plumber} who can ${verb:shoot} ${noun:fireball}s out of his ${noun:hand}s in alternate dimensions with a ${noun:special flower} and known for rescuing ${noun:Peach} from the clutches of ${noun:Bowser}.",
+      "${noun:Luigi} is Mario's cowardly ${noun:brother} who is known for his high ${verb:jump}, fearful expression, tallness, and running slightly faster than Mario. He also doesn't get enough ${noun:respect}.",
+      "${noun:Toad} is a Mario's friend who has a ${noun:mushroom hat} and can run very fast. In New Super Mario Bros. Wii, he is always ${verb:getting kidnapped}.",
+      "${noun:Bowser} is Mario's ${noun:arch nemesis} since 1981. He is known for Capturing ${noun:Princess Peach} and his goons.",
+      "${noun:Goomba}s are Mario's ${noun:first enemy} in ${noun:every Mario game except for Super Mario 3d Land}, which is a Cheep Cheep. That's literally all about them.",
+      "${noun:Koopa}s come in 3 different ways. Red shell, Green shell, and Dry Bones. They are known for the ${noun:infinite lives trick} in Super Mario Bros. in ${noun:world 1-1}.",
+      "${noun:Cappy} is Mario's friend in Super Mario Odessey. He can possess enemies, even Bowser!! When Mario throws cappy without hitting anything, he immediantly comes back.",
+      "${noun:Luma} is Mario's friend in Mario Galaxy. It was raised by Princess Rosalina, and it can destroy stone!! Pretty stong for a baby.",
+      "${noun:Yoshi} is Mario's cheerful dinosaur parent brung joy since he was a baby, and in 1992. Wait, he's a DINOSAUR PARENT??? No wonder Mario can be strange sometimes.",
+      "${noun:Paper Mario} is known for his hammer, 2d in 3d, and everyone's favorite Paper Mario, Paper Mario and the Oragami king.",
+      "${noun:Princess Peach} can ${verb:sometimes be confused with Princess Toadstool}, but get this, Toadstool was BEFORE Peach which first came in Super Mario 64."
     ],
     starwarsfacts: [
       "${noun:C3-PO} and ${noun:R2-D2} are ${noun:friend}s.",
@@ -2560,6 +2573,7 @@
     constructor() {
       super(...arguments);
       this.name = "help";
+      this.description = "This gets you help information.";
     }
     getResponse$() {
       return of(
@@ -2571,16 +2585,17 @@ ${description}`;
       );
     }
     keywordCheck(inputString) {
-      return inputString.match(/^help\b/) !== null;
+      return inputString.match(/^(help|what)$/) !== null;
     }
   };
   var RepeatResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
       this.name = "repeat";
+      this.description = "This repeats something.";
     }
     getResponse$(input) {
-      return of(`here I will repeat ${input} as many times as you want`);
+      return of(input.replace(/^repeat /, ""));
     }
     keywordCheck(inputString) {
       return inputString.match(/^repeat\b/) !== null;
@@ -2590,13 +2605,14 @@ ${description}`;
     constructor(arg) {
       super(arg);
       this.name = "default";
-      const { dictionary, vocabulary } = getDictionary();
-      this.data = dictionary;
+      this.description = "Mad-libs like gibberish";
+      const { vocabulary } = getDictionary();
       this.vocabulary = vocabulary;
     }
     getResponse$(rawInput) {
       const input = rawInput.trim().toLowerCase();
-      const texts = shuffle(Object.values(this.data).flatMap((text) => text));
+      const { dictionary } = getDictionary();
+      const texts = shuffle(Object.values(dictionary).flatMap((text) => text));
       let source;
       for (const s5 of texts) {
         console.log(`match? [${s5}] ${input}: ${s5.toLowerCase().includes(input)}`);
@@ -2628,10 +2644,25 @@ ${description}`;
       return true;
     }
   };
+  var VoicesResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "get_voices";
+      this.description = "get a list of the voices that can be used to hear the text";
+    }
+    getResponse$() {
+      const voices = this.services.getVoices();
+      return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^(get_voices|voices)$/) !== null;
+    }
+  };
   var MuteUnmuteResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
       this.name = "mute_unmute";
+      this.description = "Makes the speaking that you hear stop or start again";
       this._isMuted = false;
     }
     getResponse$(command) {
@@ -2653,6 +2684,7 @@ ${description}`;
       this.addResponder(new HelpResponder(services));
       this.addResponder(new MuteUnmuteResponder(services));
       this.addResponder(new RepeatResponder(services));
+      this.addResponder(new VoicesResponder(services));
       this.addResponder(new GibberishResponder(services));
     }
     addResponder(module) {
@@ -2669,7 +2701,7 @@ ${description}`;
     }
     getCommands() {
       return this.modules.map((m2) => {
-        return { command: m2.name, description: "TBD" };
+        return { command: m2.name, description: m2.description };
       });
     }
   };
@@ -2689,6 +2721,9 @@ ${description}`;
         },
         getCommands: () => {
           return this.responder.getCommands();
+        },
+        getVoices: () => {
+          return this.deps.synth.getVoices();
         }
       };
       this.log = (level, message) => {
@@ -2712,6 +2747,7 @@ ${description}`;
       this.input$.pipe(
         tap((input) => {
           const utterance = new SpeechSynthesisUtterance(input);
+          this.deps.synth.cancel();
           this.deps.synth.speak(utterance);
         })
       ).subscribe();

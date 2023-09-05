@@ -1,6 +1,7 @@
 interface UserDeps {
   synth: {
     getVoices: SpeechSynthesis["getVoices"];
+    speak: SpeechSynthesis["speak"];
   };
 }
 
@@ -30,5 +31,11 @@ export class User {
 
   set voice(voice: SpeechSynthesisVoice) {
     this._voice = voice;
+  }
+
+  speak(input: string) {
+    const utterance = new SpeechSynthesisUtterance(input);
+    utterance.voice = this.voice;
+    this.deps.synth.speak(utterance);
   }
 }

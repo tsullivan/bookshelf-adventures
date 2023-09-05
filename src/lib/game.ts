@@ -87,9 +87,7 @@ export class Game {
     this.input$
       .pipe(
         tap((input) => {
-          const utterance = new SpeechSynthesisUtterance(input);
-          utterance.voice = this.deps.user.voice;
-          this.deps.synth.speak(utterance);
+          this.deps.user.speak(input);
         })
       )
       .subscribe();

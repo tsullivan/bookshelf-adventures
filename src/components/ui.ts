@@ -11,7 +11,7 @@ interface ChatMessage {
 }
 
 @customElement("bookshelf-adventure")
-export class Adventure extends LitElement {
+export class Ui extends LitElement {
   public user?: User;
 
   @property({ attribute: false })
@@ -19,8 +19,14 @@ export class Adventure extends LitElement {
 
   private input$ = new Rx.ReplaySubject<string>();
 
-  public addChat(chat: ChatMessage) {
-    this.chats = [chat].concat(this.chats);
+  public addComputerChat({ message, time }: { time: Date; message: string }) {
+    const newChat: ChatMessage = { message, time, source: "computer" };
+    this.chats = [newChat].concat(this.chats);
+  }
+
+  public addUserChat({ message, time }: { message: string; time: Date }) {
+    const newChat: ChatMessage = { message, time, source: "user" };
+    this.chats = [newChat].concat(this.chats);
   }
 
   public getInput$() {
@@ -46,8 +52,7 @@ export class Adventure extends LitElement {
     const input = target.value;
     target.value = ""; // clear the text input
     this.input$.next(input);
-    this.addChat({
-      source: "user",
+    this.addUserChat({
       time: new Date(),
       message: input,
     });
@@ -62,9 +67,7 @@ export class Adventure extends LitElement {
 
   protected render() {
     return html`
-      <div id="chats" aria-live="assertive">
-        ${this.chatsTemplate()}
-      </div>
+      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
       <div id="inputs">${this.inputTemplate()}</div>
     `;
   }
@@ -87,6 +90,6 @@ export class Adventure extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "bookshelf-adventure": Adventure;
+    "bookshelf-adventure": Ui;
   }
 }

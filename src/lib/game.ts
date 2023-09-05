@@ -1,14 +1,25 @@
 import * as Rx from "rxjs";
 import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
-import { GameServices, Responder } from "./responder";
+import { Responder } from "./responder";
 import { User } from "./user";
 
 const PROTAGONIST = "Shelfie";
 
+export interface CommandInfo {
+  command: string;
+  description: string;
+}
+
+export interface GameServices {
+  getCommands: () => CommandInfo[];
+  getVoices: SpeechSynthesis["getVoices"];
+  setUserVoice: (voice: SpeechSynthesisVoice) => void;
+  setIsMuted: (value: boolean) => void;
+}
+
 export interface GameDeps {
   synth: {
     speak: SpeechSynthesis["speak"];
-    cancel: SpeechSynthesis["cancel"];
     getVoices: SpeechSynthesis["getVoices"];
   };
   user: User;
@@ -25,25 +36,29 @@ type LogFn = (level: LogLevel, message: string | Error) => void;
 export class Game {
   private output$ = new Rx.ReplaySubject<string>();
   private responder: Responder;
+  private isMuted = false;
 
-  private _isMuted = false;
-  private _services: GameServices = {
-    setIsMuted: (value: boolean) => {
-      this._isMuted = value;
-    },
-    getCommands: () => {
-      return this.responder.getCommands();
-    },
-    getVoices: () => {
-      return this.deps.synth.getVoices();
-    },
-  };
+  private readonly _services: GameServices;
 
   constructor(
     private input$: Rx.Observable<string>,
-    onMessage: (message: string) => void,
-    private deps: GameDeps
+    private deps: GameDeps,
+    onMessage: (message: string) => void
   ) {
+    this._services = {
+      getCommands: () => {
+        return this.responder.getCommands();
+      },
+      getVoices: () => {
+        return this.deps.synth.getVoices();
+      },
+      setUserVoice: (voice: SpeechSynthesisVoice) => {
+        this.deps.user.voice = voice;
+      },
+      setIsMuted: (value: boolean) => {
+        this.isMuted = value;
+      },
+    };
     this.responder = new Responder(this._services);
     this.output$.subscribe(onMessage);
   }
@@ -73,7 +88,7 @@ export class Game {
       .pipe(
         tap((input) => {
           const utterance = new SpeechSynthesisUtterance(input);
-          this.deps.synth.cancel();
+          utterance.voice = this.deps.user.voice;
           this.deps.synth.speak(utterance);
         })
       )
@@ -100,18 +115,15 @@ export class Game {
     Rx.merge(takeName$, takeChats$)
       .pipe(filter(Boolean))
       .subscribe((outputStr) => {
-        if (!this._isMuted) {
-          // FIXME: auto cancellation if the user starts typing again
+        if (!this.isMuted) {
           const utterance = new SpeechSynthesisUtterance(outputStr);
+          const voices = this.deps.synth.getVoices();
+          utterance.voice = voices[0]; // FIXME allow customizable
           this.deps.synth.speak(utterance);
         }
         this.writeOutput(outputStr);
       });
 
     this.log(LOG_DEBUG, "start complete");
-  }
-
-  public greet() {
-    return `Hello ${this.deps.user.name}`;
   }
 }

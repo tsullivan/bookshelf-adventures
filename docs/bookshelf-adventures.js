@@ -2331,15 +2331,20 @@
     }) : identity;
   }
 
-  // src/components/adventure.ts
-  var Adventure = class extends s4 {
+  // src/components/ui.ts
+  var Ui = class extends s4 {
     constructor() {
       super(...arguments);
       this.chats = [];
       this.input$ = new ReplaySubject();
     }
-    addChat(chat) {
-      this.chats = [chat].concat(this.chats);
+    addComputerChat({ message, time }) {
+      const newChat = { message, time, source: "computer" };
+      this.chats = [newChat].concat(this.chats);
+    }
+    addUserChat({ message, time }) {
+      const newChat = { message, time, source: "user" };
+      this.chats = [newChat].concat(this.chats);
     }
     getInput$() {
       return this.input$.asObservable();
@@ -2361,8 +2366,7 @@
       const input = target.value;
       target.value = "";
       this.input$.next(input);
-      this.addChat({
-        source: "user",
+      this.addUserChat({
         time: /* @__PURE__ */ new Date(),
         message: input
       });
@@ -2376,14 +2380,12 @@
     }
     render() {
       return x`
-      <div id="chats" aria-live="assertive">
-        ${this.chatsTemplate()}
-      </div>
+      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
       <div id="inputs">${this.inputTemplate()}</div>
     `;
     }
   };
-  Adventure.styles = i`
+  Ui.styles = i`
     :host {
       height: 100%;
     }
@@ -2399,10 +2401,10 @@
   `;
   __decorateClass([
     n5({ attribute: false })
-  ], Adventure.prototype, "chats", 2);
-  Adventure = __decorateClass([
+  ], Ui.prototype, "chats", 2);
+  Ui = __decorateClass([
     e4("bookshelf-adventure")
-  ], Adventure);
+  ], Ui);
 
   // src/lib/dictionary.json
   var dictionary_default = {
@@ -2569,6 +2571,35 @@
       this.services = services;
     }
   };
+  var Responder = class {
+    constructor(services) {
+      this.modules = [];
+      this.addResponder(new HelpResponder(services));
+      this.addResponder(new MuteUnmuteResponder(services));
+      this.addResponder(new RepeatResponder(services));
+      this.addResponder(new RepeatXResponder(services));
+      this.addResponder(new GetVoicesResponder(services));
+      this.addResponder(new SetVoiceResponder(services));
+      this.addResponder(new GibberishResponder(services));
+    }
+    addResponder(module) {
+      const nameExists = this.modules.find(({ name }) => module.name === name);
+      if (nameExists) {
+        throw new Error(`Responder with name ${module.name} already exists!`);
+      }
+      this.modules.push(module);
+    }
+    getResponders(userInput) {
+      return this.modules.filter((res) => {
+        return res.keywordCheck(userInput);
+      });
+    }
+    getCommands() {
+      return this.modules.map((m2) => {
+        return { command: m2.name, description: m2.description };
+      });
+    }
+  };
   var HelpResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
@@ -2586,76 +2617,6 @@ ${description}`;
     }
     keywordCheck(inputString) {
       return inputString.match(/^(help|what)$/) !== null;
-    }
-  };
-  var RepeatResponder = class extends ResponderModule {
-    constructor() {
-      super(...arguments);
-      this.name = "repeat";
-      this.description = "This repeats something.";
-    }
-    getResponse$(input) {
-      return of(input.replace(/^repeat /, ""));
-    }
-    keywordCheck(inputString) {
-      return inputString.match(/^repeat\b/) !== null;
-    }
-  };
-  var GibberishResponder = class extends ResponderModule {
-    constructor(arg) {
-      super(arg);
-      this.name = "default";
-      this.description = "Mad-libs like gibberish";
-      const { vocabulary } = getDictionary();
-      this.vocabulary = vocabulary;
-    }
-    getResponse$(rawInput) {
-      const input = rawInput.trim().toLowerCase();
-      const { dictionary } = getDictionary();
-      const texts = shuffle(Object.values(dictionary).flatMap((text) => text));
-      let source;
-      for (const s5 of texts) {
-        console.log(`match? [${s5}] ${input}: ${s5.toLowerCase().includes(input)}`);
-        if (s5.toLowerCase().includes(input)) {
-          console.log(`matched text ${input} in ${s5}`);
-          source = s5;
-          break;
-        }
-      }
-      if (!source) {
-        source = texts[0];
-      }
-      const matches = source.match(/\${\S+:[^}]+}/g);
-      if (matches) {
-        for (const mI in matches) {
-          const m2 = matches[mI];
-          const subMatches = m2.match(/\${(\S+):([^}]+)}/);
-          if (subMatches) {
-            const [kind, thing] = subMatches.splice(1, 2);
-            const nextThing = thing.toLowerCase().includes(input) ? thing : sample(this.vocabulary[kind]);
-            console.log(`replace ${m2} with ${nextThing}`);
-            source = source.replace(m2, nextThing);
-          }
-        }
-      }
-      return of(source);
-    }
-    keywordCheck() {
-      return true;
-    }
-  };
-  var VoicesResponder = class extends ResponderModule {
-    constructor() {
-      super(...arguments);
-      this.name = "get_voices";
-      this.description = "get a list of the voices that can be used to hear the text";
-    }
-    getResponse$() {
-      const voices = this.services.getVoices();
-      return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
-    }
-    keywordCheck(inputString) {
-      return inputString.match(/^(get_voices|voices)$/) !== null;
     }
   };
   var MuteUnmuteResponder = class extends ResponderModule {
@@ -2678,31 +2639,105 @@ ${description}`;
       return inputString.match(/^(mute|unmute)$/) !== null;
     }
   };
-  var Responder = class {
-    constructor(services) {
-      this.modules = [];
-      this.addResponder(new HelpResponder(services));
-      this.addResponder(new MuteUnmuteResponder(services));
-      this.addResponder(new RepeatResponder(services));
-      this.addResponder(new VoicesResponder(services));
-      this.addResponder(new GibberishResponder(services));
+  var GetVoicesResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "get_voices";
+      this.description = "Get a list of the voices that can be used to hear the text";
     }
-    addResponder(module) {
-      const nameExists = this.modules.find(({ name }) => module.name === name);
-      if (nameExists) {
-        throw new Error(`Responder with name ${module.name} already exists!`);
+    getResponse$() {
+      const voices = this.services.getVoices();
+      return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^(get_voices|voices)$/) !== null;
+    }
+  };
+  var SetVoiceResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "set_voice";
+      this.description = "Set the voice you hear that read the things you type";
+    }
+    getResponse$(input) {
+      const voiceIndex = parseInt(input.replace(/^set_voice (\d+) .*$/, "$1"));
+      const voices = this.services.getVoices();
+      const newVoice = voices[voiceIndex];
+      this.services.setUserVoice(newVoice);
+      return of(`Set user voice to ${newVoice.name}`);
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^set_voice \d+$/) !== null;
+    }
+  };
+  var RepeatResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "repeat";
+      this.description = "This repeats something.";
+    }
+    getResponse$(input) {
+      return of(input.replace(/^repeat /, ""));
+    }
+    keywordCheck(inputString) {
+      return inputString.match(/^repeat\b/) !== null;
+    }
+  };
+  var RepeatXResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "repeatx";
+      this.description = "This repeats something X number of times.";
+    }
+    getResponse$(input) {
+      const repeatTimes = parseInt(input.replace(/^repeatx (\d+) .*$/, "$1"));
+      const whatToRepeat = input.replace(/^repeatx \d+ (.*$)/, "$1");
+      let result = "";
+      for (let repeats = 0; repeats < repeatTimes; repeats++) {
+        result += " " + whatToRepeat;
       }
-      this.modules.push(module);
+      return of(result);
     }
-    getResponders(userInput) {
-      return this.modules.filter((res) => {
-        return res.keywordCheck(userInput);
-      });
+    keywordCheck(inputString) {
+      return inputString.match(/^repeatx (\d+) /) !== null;
     }
-    getCommands() {
-      return this.modules.map((m2) => {
-        return { command: m2.name, description: m2.description };
-      });
+  };
+  var GibberishResponder = class extends ResponderModule {
+    constructor(arg) {
+      super(arg);
+      this.name = "default";
+      this.description = "Mad-libs like gibberish";
+    }
+    getResponse$(rawInput) {
+      const input = rawInput.trim().toLowerCase();
+      const { vocabulary, dictionary } = getDictionary();
+      const texts = shuffle(Object.values(dictionary).flatMap((text) => text));
+      let source;
+      for (const s5 of texts) {
+        if (s5.toLowerCase().includes(input)) {
+          source = s5;
+          break;
+        }
+      }
+      if (!source) {
+        source = texts[0];
+      }
+      const matches = source.match(/\${\S+:[^}]+}/g);
+      if (matches) {
+        for (const mI in matches) {
+          const m2 = matches[mI];
+          const subMatches = m2.match(/\${(\S+):([^}]+)}/);
+          if (subMatches) {
+            const [kind, thing] = subMatches.splice(1, 2);
+            const nextThing = thing.toLowerCase().includes(input) ? thing : sample(vocabulary[kind]);
+            source = source.replace(m2, nextThing);
+          }
+        }
+      }
+      return of(source);
+    }
+    keywordCheck() {
+      return true;
     }
   };
 
@@ -2710,27 +2745,30 @@ ${description}`;
   var PROTAGONIST = "Shelfie";
   var LOG_DEBUG = "debug" /* DEBUG */;
   var Game = class {
-    constructor(input$, onMessage, deps) {
+    constructor(input$, deps, onMessage) {
       this.input$ = input$;
       this.deps = deps;
       this.output$ = new ReplaySubject();
-      this._isMuted = false;
-      this._services = {
-        setIsMuted: (value) => {
-          this._isMuted = value;
-        },
-        getCommands: () => {
-          return this.responder.getCommands();
-        },
-        getVoices: () => {
-          return this.deps.synth.getVoices();
-        }
-      };
+      this.isMuted = false;
       this.log = (level, message) => {
         console.log(`[Game/${level}] ${message}`);
       };
       this.writeOutput = (nextOutput) => {
         this.output$.next(nextOutput);
+      };
+      this._services = {
+        getCommands: () => {
+          return this.responder.getCommands();
+        },
+        getVoices: () => {
+          return this.deps.synth.getVoices();
+        },
+        setUserVoice: (voice) => {
+          this.deps.user.voice = voice;
+        },
+        setIsMuted: (value) => {
+          this.isMuted = value;
+        }
       };
       this.responder = new Responder(this._services);
       this.output$.subscribe(onMessage);
@@ -2747,7 +2785,7 @@ ${description}`;
       this.input$.pipe(
         tap((input) => {
           const utterance = new SpeechSynthesisUtterance(input);
-          this.deps.synth.cancel();
+          utterance.voice = this.deps.user.voice;
           this.deps.synth.speak(utterance);
         })
       ).subscribe();
@@ -2767,23 +2805,24 @@ ${description}`;
         })
       );
       merge(takeName$, takeChats$).pipe(filter(Boolean)).subscribe((outputStr) => {
-        if (!this._isMuted) {
+        if (!this.isMuted) {
           const utterance = new SpeechSynthesisUtterance(outputStr);
+          const voices = this.deps.synth.getVoices();
+          utterance.voice = voices[0];
           this.deps.synth.speak(utterance);
         }
         this.writeOutput(outputStr);
       });
       this.log(LOG_DEBUG, "start complete");
     }
-    greet() {
-      return `Hello ${this.deps.user.name}`;
-    }
   };
 
   // src/lib/user.ts
   var User = class {
-    constructor() {
+    constructor(deps) {
+      this.deps = deps;
       this._name = null;
+      this._voice = null;
     }
     get name() {
       return this._name;
@@ -2791,27 +2830,35 @@ ${description}`;
     set name(value) {
       this._name = value;
     }
+    get voice() {
+      if (this._voice) {
+        return this._voice;
+      }
+      const voices = this.deps.synth.getVoices();
+      this._voice = voices[2];
+      return this._voice;
+    }
+    set voice(voice) {
+      this._voice = voice;
+    }
   };
 
   // src/browser.ts
   function browser() {
-    const user = new User();
+    const synth = window.speechSynthesis;
+    const user = new User({ synth });
     const gameUi2 = document.createElement("bookshelf-adventure");
     gameUi2.user = user;
     const input$ = gameUi2.getInput$();
-    const gameDeps = {
-      user,
-      synth: window.speechSynthesis
-    };
+    const gameDeps = { user, synth };
     const onMessage = (message) => {
-      gameUi2.addChat({
-        source: "computer",
+      gameUi2.addComputerChat({
         time: /* @__PURE__ */ new Date(),
         // unused
         message
       });
     };
-    const game2 = new Game(input$, onMessage, gameDeps);
+    const game2 = new Game(input$, gameDeps, onMessage);
     return { game: game2, gameUi: gameUi2 };
   }
   var { game, gameUi } = browser();

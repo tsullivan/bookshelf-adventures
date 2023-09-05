@@ -3,25 +3,22 @@ import { Game, GameDeps } from "./lib/game";
 import { User } from "./lib/user";
 
 function browser() {
-  const user = new User();
+  const synth = window.speechSynthesis;
+  const user = new User({ synth });
   // Create UI component
   const gameUi = document.createElement("bookshelf-adventure");
   gameUi.user = user;
 
   // Create responder module
   const input$ = gameUi.getInput$();
-  const gameDeps: GameDeps = {
-    user,
-    synth: window.speechSynthesis,
-  };
+  const gameDeps: GameDeps = { user, synth };
   const onMessage = (message: string) => {
-    gameUi.addChat({
-      source: "computer",
+    gameUi.addComputerChat({
       time: new Date(), // unused
       message,
     });
   };
-  const game = new Game(input$, onMessage, gameDeps);
+  const game = new Game(input$, gameDeps, onMessage);
 
   return { game, gameUi };
 }

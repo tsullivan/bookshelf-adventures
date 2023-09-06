@@ -37,6 +37,7 @@ function createDictionary(
       }
     }
   }
+  // FIXME shrink the vocabulary choices by removing duplicates
   return { dictionary, vocabulary: accum };
 }
 

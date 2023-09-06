@@ -2628,7 +2628,7 @@ ${description}`;
     constructor() {
       super(...arguments);
       this.name = "set_voice";
-      this.description = "Set the voice you hear that read the things you type";
+      this.description = "Set the voice you hear that read the things";
     }
     getResponse$(input) {
       const voiceIndex = parseInt(input.replace(/^set_voice (\d+) .*$/, "$1"));
@@ -2769,7 +2769,7 @@ ${description}`;
           return this.deps.synth.getVoices();
         },
         setUserVoice: (voice) => {
-          this.deps.user.voice = voice;
+          this.deps.users.user_1.voice = voice;
         },
         setIsMuted: (value) => {
           this.isMuted = value;
@@ -2789,13 +2789,13 @@ ${description}`;
       this.writeOutput("Hello! What is your name?");
       this.input$.pipe(
         tap((input) => {
-          this.deps.user.speak(input);
+          this.deps.users.user_1.speak(input);
         })
       ).subscribe();
       const takeName$ = this.input$.pipe(
         take(1),
         map((name) => {
-          this.deps.user.name = name;
+          this.deps.users.user_1.name = name;
           return `Hello, ${name}! My name is ${PROTAGONIST}.`;
         })
       );
@@ -2850,15 +2850,20 @@ ${description}`;
       this.deps.synth.speak(utterance);
     }
   };
+  var createUsers = (deps) => {
+    const computer_1 = new User(deps);
+    const user_1 = new User(deps);
+    return { computer_1, user_1 };
+  };
 
   // src/browser.ts
   function browser() {
     const synth = window.speechSynthesis;
-    const user = new User({ synth });
+    const users = createUsers({ synth });
     const gameUi2 = document.createElement("bookshelf-adventure");
-    gameUi2.user = user;
+    gameUi2.user = users.user_1;
     const input$ = gameUi2.getInput$();
-    const gameDeps = { user, synth };
+    const gameDeps = { users, synth };
     const onMessage = (message) => {
       gameUi2.addComputerChat({
         time: /* @__PURE__ */ new Date(),

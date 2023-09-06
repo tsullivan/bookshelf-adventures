@@ -1,7 +1,7 @@
 import * as Rx from "rxjs";
 import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
 import { Responder } from "./responder";
-import { User } from "./user";
+import type { createUsers } from "./user";
 
 const PROTAGONIST = "Shelfie";
 
@@ -22,7 +22,7 @@ export interface GameDeps {
     speak: SpeechSynthesis["speak"];
     getVoices: SpeechSynthesis["getVoices"];
   };
-  user: User;
+  users: ReturnType<typeof createUsers>;
 }
 
 enum LogLevel {
@@ -53,7 +53,7 @@ export class Game {
         return this.deps.synth.getVoices();
       },
       setUserVoice: (voice: SpeechSynthesisVoice) => {
-        this.deps.user.voice = voice;
+        this.deps.users.user_1.voice = voice;
       },
       setIsMuted: (value: boolean) => {
         this.isMuted = value;
@@ -87,7 +87,7 @@ export class Game {
     this.input$
       .pipe(
         tap((input) => {
-          this.deps.user.speak(input);
+          this.deps.users.user_1.speak(input);
         })
       )
       .subscribe();
@@ -96,7 +96,7 @@ export class Game {
       take(1),
       map((name) => {
         // handle username provided
-        this.deps.user.name = name;
+        this.deps.users.user_1.name = name;
         return `Hello, ${name}! My name is ${PROTAGONIST}.`;
       })
     );

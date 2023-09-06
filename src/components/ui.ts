@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { css } from "lit-element/lit-element.js";
 import { customElement, property } from "lit/decorators.js";
 import * as Rx from "rxjs";
-import { User } from "../lib/user";
+import type { User } from "../lib/user";
 
 interface ChatMessage {
   source: "computer" | "user";

@@ -63,8 +63,9 @@ export class GetVoicesResponder extends ResponderModule {
 
 export class SetVoiceResponder extends ResponderModule {
   name = "set_voice";
-  description = "Set the voice you hear that read the things you type";
+  description = "Set the voice you hear that read the things";
   getResponse$(input: string) {
+    // TODO: support set_my_voice, set_shelfie_voice
     const voiceIndex = parseInt(input.replace(/^set_voice (\d+) .*$/, "$1"));
     const voices = this.services.getVoices();
     const newVoice = voices[voiceIndex];
@@ -115,6 +116,7 @@ export class GibberishResponder extends ResponderModule {
     this.vocabulary = vocabulary;
   }
   getResponse$(rawInput: string) {
+    // TODO: allow gibberish to be turned off
     const input = rawInput.trim().toLowerCase();
     const { dictionary } = getDictionary();
     // search the dictionary data in a random order

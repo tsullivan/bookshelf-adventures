@@ -1,17 +1,17 @@
 import "./components";
 import { Game, GameDeps } from "./lib/game";
-import { User } from "./lib/user";
+import { createUsers } from "./lib/user";
 
 function browser() {
   const synth = window.speechSynthesis;
-  const user = new User({ synth });
+  const users = createUsers({ synth });
   // Create UI component
   const gameUi = document.createElement("bookshelf-adventure");
-  gameUi.user = user;
+  gameUi.user = users.user_1;
 
   // Create responder module
   const input$ = gameUi.getInput$();
-  const gameDeps: GameDeps = { user, synth };
+  const gameDeps: GameDeps = { users, synth };
   const onMessage = (message: string) => {
     gameUi.addComputerChat({
       time: new Date(), // unused

@@ -39,3 +39,9 @@ export class User {
     this.deps.synth.speak(utterance);
   }
 }
+
+export const createUsers = (deps: UserDeps) => {
+  const computer_1 = new User(deps);
+  const user_1 = new User(deps);
+  return { computer_1, user_1 };
+};

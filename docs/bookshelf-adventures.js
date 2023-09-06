@@ -14362,7 +14362,7 @@ ${description}`;
     }
     getResponse$(input) {
       let isHelp = input.match(/^timer$/) !== null;
-      const timeoutTime = parseInt(input.replace(/^timer (\d)+s/, "$1"));
+      const timeoutTime = parseInt(input.replace(/^timer (\d+)s/, "$1"));
       if (isNaN(timeoutTime)) {
         isHelp = true;
       }

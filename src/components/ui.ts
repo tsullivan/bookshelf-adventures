@@ -69,7 +69,7 @@ export class Ui extends LitElement {
 
   protected render() {
     return html`
-      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
+      <div id="chats">${this.chatsTemplate()}</div>
       <div id="inputs">${this.inputTemplate()}</div>
     `;
   }

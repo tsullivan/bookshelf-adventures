@@ -13782,7 +13782,7 @@ ${content}</tr>
     }
     render() {
       return x`
-      <div id="chats" aria-live="assertive">${this.chatsTemplate()}</div>
+      <div id="chats">${this.chatsTemplate()}</div>
       <div id="inputs">${this.inputTemplate()}</div>
     `;
     }
@@ -14116,18 +14116,26 @@ ${description}`;
       return true;
     }
   };
+  var createResponders = (services) => {
+    return [
+      new HelpResponder(services),
+      new MuteUnmuteResponder(services),
+      new RepeatResponder(services),
+      new RepeatXResponder(services),
+      new GetVoicesResponder(services),
+      new SetVoiceResponder(services),
+      new GibberishResponder(services)
+      // must be last
+    ];
+  };
 
   // src/lib/responder.ts
   var Responder = class {
     constructor(services) {
       this.modules = [];
-      this.addResponder(new HelpResponder(services));
-      this.addResponder(new MuteUnmuteResponder(services));
-      this.addResponder(new RepeatResponder(services));
-      this.addResponder(new RepeatXResponder(services));
-      this.addResponder(new GetVoicesResponder(services));
-      this.addResponder(new SetVoiceResponder(services));
-      this.addResponder(new GibberishResponder(services));
+      createResponders(services).forEach((responder) => {
+        this.addResponder(responder);
+      });
     }
     addResponder(module) {
       const nameExists = this.modules.find(({ name }) => module.name === name);
@@ -14156,7 +14164,7 @@ ${description}`;
       this.input$ = input$;
       this.deps = deps;
       this.output$ = new ReplaySubject();
-      this.isMuted = false;
+      this._isMuted = false;
       this.log = (level, message) => {
         console.log(`[Game/${level}] ${message}`);
       };
@@ -14174,7 +14182,7 @@ ${description}`;
           this.deps.users.user_1.voice = voice;
         },
         setIsMuted: (value) => {
-          this.isMuted = value;
+          this._isMuted = value;
         }
       };
       this.responder = new Responder(this._services);
@@ -14191,7 +14199,10 @@ ${description}`;
       this.writeOutput("Hello! What is your name?");
       this.input$.pipe(
         tap((input) => {
-          this.deps.users.user_1.speak(input);
+          if (!this._isMuted) {
+            this.deps.synth.cancel();
+            this.deps.users.user_1.speak(input);
+          }
         })
       ).subscribe();
       const takeName$ = this.input$.pipe(
@@ -14210,7 +14221,7 @@ ${description}`;
         })
       );
       merge(takeName$, takeChats$).pipe(filter(Boolean)).subscribe((outputStr) => {
-        if (!this.isMuted) {
+        if (!this._isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
         this.writeOutput(outputStr);
@@ -14221,8 +14232,9 @@ ${description}`;
 
   // src/lib/user.ts
   var User = class {
-    constructor(deps) {
+    constructor(deps, _defaultVoiceIndex) {
       this.deps = deps;
+      this._defaultVoiceIndex = _defaultVoiceIndex;
       this._name = null;
       this._voice = null;
     }
@@ -14237,7 +14249,7 @@ ${description}`;
         return this._voice;
       }
       const voices = this.deps.synth.getVoices();
-      this._voice = voices[2];
+      this._voice = voices[this._defaultVoiceIndex];
       return this._voice;
     }
     set voice(voice) {
@@ -14250,8 +14262,8 @@ ${description}`;
     }
   };
   var createUsers = (deps) => {
-    const computer_1 = new User(deps);
-    const user_1 = new User(deps);
+    const computer_1 = new User(deps, 0);
+    const user_1 = new User(deps, 1);
     return { computer_1, user_1 };
   };
 

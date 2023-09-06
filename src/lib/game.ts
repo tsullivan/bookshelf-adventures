@@ -19,6 +19,7 @@ export interface GameServices {
 
 export interface GameDeps {
   synth: {
+    cancel: SpeechSynthesis["cancel"];
     speak: SpeechSynthesis["speak"];
     getVoices: SpeechSynthesis["getVoices"];
   };
@@ -36,7 +37,7 @@ type LogFn = (level: LogLevel, message: string | Error) => void;
 export class Game {
   private output$ = new Rx.ReplaySubject<string>();
   private responder: Responder;
-  private isMuted = false;
+  private _isMuted = false;
 
   private readonly _services: GameServices;
 
@@ -56,7 +57,7 @@ export class Game {
         this.deps.users.user_1.voice = voice;
       },
       setIsMuted: (value: boolean) => {
-        this.isMuted = value;
+        this._isMuted = value;
       },
     };
     this.responder = new Responder(this._services);
@@ -87,7 +88,10 @@ export class Game {
     this.input$
       .pipe(
         tap((input) => {
-          this.deps.users.user_1.speak(input);
+          if (!this._isMuted) {
+            this.deps.synth.cancel() // allow user to cancel computer's speech
+            this.deps.users.user_1.speak(input);
+          }
         })
       )
       .subscribe();
@@ -113,7 +117,7 @@ export class Game {
     Rx.merge(takeName$, takeChats$)
       .pipe(filter(Boolean))
       .subscribe((outputStr) => {
-        if (!this.isMuted) {
+        if (!this._isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
         this.writeOutput(outputStr);

@@ -9,7 +9,7 @@ export class User {
   private _name: string | null = null;
   private _voice: SpeechSynthesisVoice | null = null;
 
-  constructor(private deps: UserDeps) {}
+  constructor(private deps: UserDeps, private _defaultVoiceIndex: number) {}
 
   get name(): string | null {
     return this._name;
@@ -25,7 +25,7 @@ export class User {
     }
 
     const voices = this.deps.synth.getVoices();
-    this._voice = voices[2];
+    this._voice = voices[this._defaultVoiceIndex];
     return this._voice;
   }
 
@@ -41,7 +41,7 @@ export class User {
 }
 
 export const createUsers = (deps: UserDeps) => {
-  const computer_1 = new User(deps);
-  const user_1 = new User(deps);
+  const computer_1 = new User(deps, 0);
+  const user_1 = new User(deps, 1);
   return { computer_1, user_1 };
 };

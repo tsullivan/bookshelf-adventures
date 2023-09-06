@@ -12,7 +12,7 @@ export abstract class ResponderModule {
   public abstract keywordCheck(inputString: string): boolean;
 }
 
-export class HelpResponder extends ResponderModule {
+class HelpResponder extends ResponderModule {
   name = "help";
   description = "This gets you help information.";
   getResponse$() {
@@ -30,7 +30,7 @@ export class HelpResponder extends ResponderModule {
   }
 }
 
-export class MuteUnmuteResponder extends ResponderModule {
+class MuteUnmuteResponder extends ResponderModule {
   name = "mute_unmute";
   description = "Makes the speaking that you hear stop or start again";
   private _isMuted = false;
@@ -49,7 +49,7 @@ export class MuteUnmuteResponder extends ResponderModule {
   }
 }
 
-export class GetVoicesResponder extends ResponderModule {
+class GetVoicesResponder extends ResponderModule {
   name = "get_voices";
   description = "Get a list of the voices that can be used to hear the text";
   getResponse$() {
@@ -61,7 +61,7 @@ export class GetVoicesResponder extends ResponderModule {
   }
 }
 
-export class SetVoiceResponder extends ResponderModule {
+class SetVoiceResponder extends ResponderModule {
   name = "set_voice";
   description = "Set the voice you hear that read the things";
   getResponse$(input: string) {
@@ -77,7 +77,7 @@ export class SetVoiceResponder extends ResponderModule {
   }
 }
 
-export class RepeatResponder extends ResponderModule {
+class RepeatResponder extends ResponderModule {
   name = "repeat";
   description = "This repeats something.";
   getResponse$(input: string) {
@@ -88,7 +88,7 @@ export class RepeatResponder extends ResponderModule {
   }
 }
 
-export class RepeatXResponder extends ResponderModule {
+class RepeatXResponder extends ResponderModule {
   name = "repeatx";
   description = "This repeats something X number of times.";
   getResponse$(input: string) {
@@ -105,7 +105,7 @@ export class RepeatXResponder extends ResponderModule {
   }
 }
 
-export class GibberishResponder extends ResponderModule {
+class GibberishResponder extends ResponderModule {
   name = "default";
   description = "Mad-libs like gibberish";
   vocabulary: Vocabulary;
@@ -154,3 +154,15 @@ export class GibberishResponder extends ResponderModule {
     return true;
   }
 }
+
+export const createResponders = (services: GameServices) => {
+  return [
+    new HelpResponder(services),
+    new MuteUnmuteResponder(services),
+    new RepeatResponder(services),
+    new RepeatXResponder(services),
+    new GetVoicesResponder(services),
+    new SetVoiceResponder(services),
+    new GibberishResponder(services), // must be last
+  ];
+};

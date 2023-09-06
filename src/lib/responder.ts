@@ -1,26 +1,13 @@
 import { CommandInfo, GameServices } from "./game";
-import {
-  GetVoicesResponder,
-  GibberishResponder,
-  HelpResponder,
-  MuteUnmuteResponder,
-  RepeatResponder,
-  RepeatXResponder,
-  ResponderModule,
-  SetVoiceResponder,
-} from "./responders";
+import { ResponderModule, createResponders } from "./responders";
 
 export class Responder {
   private modules: ResponderModule[] = [];
 
   constructor(services: GameServices) {
-    this.addResponder(new HelpResponder(services));
-    this.addResponder(new MuteUnmuteResponder(services));
-    this.addResponder(new RepeatResponder(services));
-    this.addResponder(new RepeatXResponder(services));
-    this.addResponder(new GetVoicesResponder(services));
-    this.addResponder(new SetVoiceResponder(services));
-    this.addResponder(new GibberishResponder(services)); // must be last
+    createResponders(services).forEach((responder) => {
+      this.addResponder(responder);
+    });
   }
 
   private addResponder(module: ResponderModule) {

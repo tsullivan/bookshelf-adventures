@@ -16,96 +16,6 @@ const ofStatic = (input: string) => {
   return Rx.of(input);
 };
 
-class HelpResponder extends ResponderModule {
-  name = "help";
-  description = "This gets you help information.";
-  getResponse$() {
-    return ofStatic(
-      this.services
-        .getCommands()
-        .reduce<string>((final, { command, description }) => {
-          const prefix = final ? final + "\n\n" : "";
-          return prefix + `**${command}**:\n${description}`;
-        }, "")
-    );
-  }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^(help|what)$/) !== null;
-  }
-}
-
-class MuteUnmuteResponder extends ResponderModule {
-  name = "mute_unmute";
-  description = "Makes the speaking that you hear stop or start again";
-  private _isMuted = false;
-  getResponse$(command: string) {
-    command = command.toLowerCase();
-
-    this._isMuted = command === "mute";
-    this.services.setIsMuted(this._isMuted);
-    return ofStatic(this._isMuted ? "Muted." : "Unmuted.");
-  }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^(mute|unmute)$/) !== null;
-  }
-}
-
-class GetVoicesResponder extends ResponderModule {
-  name = "get_voices";
-  description = "Get a list of the voices that can be used to hear the text";
-  getResponse$() {
-    const voices = this.services.getVoices();
-    return ofStatic(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
-  }
-  keywordCheck(inputString: string) {
-    return inputString.match(/^(get_voices|voices)$/) !== null;
-  }
-}
-
-class SetVoiceResponder extends ResponderModule {
-  name = "set_voice";
-  description = "Set the voice you hear that read the things";
-  getResponse$(input: string) {
-    // TODO: support set_my_voice, set_shelfie_voice
-    const voiceIndex = parseInt(input.replace(/^set_voice (\d+) .*$/, "$1"));
-    const voices = this.services.getVoices();
-    const newVoice = voices[voiceIndex];
-    this.services.setUserVoice(newVoice);
-    return ofStatic(`Set user voice to ${newVoice.name}`);
-  }
-  keywordCheck(inputString: string) {
-    return inputString.match(/^set_voice \d+$/) !== null;
-  }
-}
-
-class RepeatResponder extends ResponderModule {
-  name = "repeat";
-  description = "This repeats something.";
-  getResponse$(input: string) {
-    return ofStatic(input.replace(/^repeat /, ""));
-  }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^repeat\b/) !== null;
-  }
-}
-
-class RepeatXResponder extends ResponderModule {
-  name = "repeatx";
-  description = "This repeats something X number of times.";
-  getResponse$(input: string) {
-    const repeatTimes = parseInt(input.replace(/^repeatx (\d+) .*$/, "$1"));
-    const whatToRepeat = input.replace(/^repeatx \d+ (.*$)/, "$1");
-    let result = "";
-    for (let repeats = 0; repeats < repeatTimes; repeats++) {
-      result += " " + whatToRepeat;
-    }
-    return ofStatic(result);
-  }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^repeatx (\d+) /) !== null;
-  }
-}
-
 class GibberishResponder extends ResponderModule {
   name = "default";
   description = "Mad-libs like gibberish";
@@ -156,6 +66,111 @@ class GibberishResponder extends ResponderModule {
   }
 }
 
+class HelpResponder extends ResponderModule {
+  name = "help";
+  description = "This gets you help information.";
+  getResponse$() {
+    return ofStatic(
+      this.services
+        .getCommands()
+        .reduce<string>((final, { command, description }) => {
+          const prefix = final ? final + "\n\n" : "";
+          return prefix + `**${command}**:\n${description}`;
+        }, "")
+    );
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^(help|what)\b/) !== null;
+  }
+}
+
+class MuteUnmuteResponder extends ResponderModule {
+  name = "mute_unmute";
+  description = "Makes the speaking that you hear stop or start again";
+  getResponse$(command: string) {
+    command = command.toLowerCase();
+
+    const isMuted = command === "mute";
+    this.services.setIsMuted(isMuted);
+    return ofStatic(isMuted ? "Muted." : "Unmuted.");
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^(mute|unmute)$/) !== null;
+  }
+}
+
+class GetVoicesResponder extends ResponderModule {
+  name = "get_voices";
+  description = "Get a list of the voices that can be used to hear the text";
+  getResponse$() {
+    const voices = this.services.getVoices();
+    return ofStatic(
+      voices.map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
+    );
+  }
+  keywordCheck(inputString: string) {
+    return inputString.match(/^(get_voices|voices)$/) !== null;
+  }
+}
+
+class SetVoiceResponder extends ResponderModule {
+  name = "set_voice";
+  description = "Set the voice you hear that read the things";
+  getResponse$(input: string) {
+    // TODO: support set_my_voice, set_shelfie_voice
+    const voices = this.services.getVoices();
+    const voiceIndex = parseInt(input.replace(/^set_voice (\d+)/, "$1"));
+    if (isNaN(voiceIndex)) {
+      return ofStatic("type 'set_voice <number>'");
+    }
+    const newVoice = voices[voiceIndex - 1] as SpeechSynthesisVoice | undefined;
+    if (typeof newVoice !== "undefined") {
+      this.services.setUserVoice(newVoice);
+      return ofStatic(`Set user voice to ${newVoice.name}`);
+    }
+    return ofStatic(`Unknown voice ${voiceIndex}`);
+  }
+  keywordCheck(inputString: string) {
+    return inputString.match(/^set_voice \d+$/) !== null;
+  }
+}
+
+class RepeatResponder extends ResponderModule {
+  name = "repeat";
+  description = "This repeats something.";
+  getResponse$(input: string) {
+    return ofStatic(input.replace(/^(repeat|say) /, ""));
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^(repeat|say)\b/) !== null;
+  }
+}
+
+class RepeatXResponder extends ResponderModule {
+  name = "repeatx";
+  description = "This repeats something X number of times.";
+  getResponse$(input: string) {
+    let isHelp = input.match(/^repeatx$/) !== null;
+    const repeatTimes = parseInt(input.replace(/^repeatx (\d+)/, "$1"));
+    if (isNaN(repeatTimes)) {
+      isHelp = true;
+    }
+    if (isHelp) {
+      return ofStatic("type 'repeatx <number> thing-to-repeat'");
+    }
+
+    const whatToRepeat = input.replace(/^repeatx \d+ (.*$)/, "$1");
+    let result = "";
+    for (let repeats = 0; repeats < repeatTimes; repeats++) {
+      result += " " + whatToRepeat;
+    }
+    return ofStatic(result);
+  }
+  public keywordCheck(inputString: string) {
+    return inputString.match(/^repeatx (\d+) /) !== null;
+  }
+}
+
 class TimerResponder extends ResponderModule {
   name = "timer";
   description = "Set a timer";
@@ -163,7 +178,17 @@ class TimerResponder extends ResponderModule {
     super(arg);
   }
   public getResponse$(input: string): Rx.Observable<string | false> {
-    return Rx.timer(3000).pipe(map(() => input));
+    let isHelp = input.match(/^timer$/) !== null;
+    const timeoutTime = parseInt(input.replace(/^timer (\d)+s/, "$1"));
+    if (isNaN(timeoutTime)) {
+      isHelp = true;
+    }
+    if (isHelp) {
+      return ofStatic("type 'timer 3s something-to-say'");
+    }
+
+    const thingToSay = input.replace(/^timer \d+s (.*)$/, "$1");
+    return Rx.timer(timeoutTime * 1000).pipe(map(() => thingToSay));
   }
   public keywordCheck(input: string) {
     return input.match(/^timer\b/) !== null;

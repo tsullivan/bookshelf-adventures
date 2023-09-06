@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { css } from "lit-element/lit-element.js";
+import { resolveMarkdown } from "lit-markdown";
 import { customElement, property } from "lit/decorators.js";
 import * as Rx from "rxjs";
 import type { User } from "../lib/user";
@@ -36,7 +37,8 @@ export class Ui extends LitElement {
   private chatsTemplate() {
     return this.chats.map(({ source, message }) => {
       return html`<p>
-        [${source === "user" ? this.user?.name : source}] ${message}
+        [${source === "user" ? this.user?.name : source}]
+        ${resolveMarkdown(message)}
       </p>`;
     });
   }

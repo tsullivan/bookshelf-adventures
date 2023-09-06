@@ -114,10 +114,7 @@ export class Game {
       .pipe(filter(Boolean))
       .subscribe((outputStr) => {
         if (!this.isMuted) {
-          const utterance = new SpeechSynthesisUtterance(outputStr);
-          const voices = this.deps.synth.getVoices();
-          utterance.voice = voices[0]; // FIXME allow customizable
-          this.deps.synth.speak(utterance);
+          this.deps.users.computer_1.speak(outputStr);
         }
         this.writeOutput(outputStr);
       });

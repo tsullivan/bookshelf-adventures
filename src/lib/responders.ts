@@ -1,5 +1,5 @@
 import * as Rx from "rxjs";
-import { of } from "rxjs";
+import { map } from "rxjs/operators";
 import { Vocabulary, getDictionary } from "./dictionary";
 import { GameServices } from "./game";
 import { sample, shuffle } from "./utils";
@@ -12,11 +12,15 @@ export abstract class ResponderModule {
   public abstract keywordCheck(inputString: string): boolean;
 }
 
+const ofStatic = (input: string) => {
+  return Rx.of(input);
+};
+
 class HelpResponder extends ResponderModule {
   name = "help";
   description = "This gets you help information.";
   getResponse$() {
-    return of(
+    return ofStatic(
       this.services
         .getCommands()
         .reduce<string>((final, { command, description }) => {
@@ -36,13 +40,10 @@ class MuteUnmuteResponder extends ResponderModule {
   private _isMuted = false;
   getResponse$(command: string) {
     command = command.toLowerCase();
-    if (command !== "mute" && command !== "unmute") {
-      return of(false as const);
-    }
 
     this._isMuted = command === "mute";
     this.services.setIsMuted(this._isMuted);
-    return of(this._isMuted ? "Muted." : "Unmuted.");
+    return ofStatic(this._isMuted ? "Muted." : "Unmuted.");
   }
   public keywordCheck(inputString: string) {
     return inputString.match(/^(mute|unmute)$/) !== null;
@@ -54,7 +55,7 @@ class GetVoicesResponder extends ResponderModule {
   description = "Get a list of the voices that can be used to hear the text";
   getResponse$() {
     const voices = this.services.getVoices();
-    return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
+    return ofStatic(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
   }
   keywordCheck(inputString: string) {
     return inputString.match(/^(get_voices|voices)$/) !== null;
@@ -70,7 +71,7 @@ class SetVoiceResponder extends ResponderModule {
     const voices = this.services.getVoices();
     const newVoice = voices[voiceIndex];
     this.services.setUserVoice(newVoice);
-    return of(`Set user voice to ${newVoice.name}`);
+    return ofStatic(`Set user voice to ${newVoice.name}`);
   }
   keywordCheck(inputString: string) {
     return inputString.match(/^set_voice \d+$/) !== null;
@@ -81,7 +82,7 @@ class RepeatResponder extends ResponderModule {
   name = "repeat";
   description = "This repeats something.";
   getResponse$(input: string) {
-    return of(input.replace(/^repeat /, ""));
+    return ofStatic(input.replace(/^repeat /, ""));
   }
   public keywordCheck(inputString: string) {
     return inputString.match(/^repeat\b/) !== null;
@@ -98,7 +99,7 @@ class RepeatXResponder extends ResponderModule {
     for (let repeats = 0; repeats < repeatTimes; repeats++) {
       result += " " + whatToRepeat;
     }
-    return of(result);
+    return ofStatic(result);
   }
   public keywordCheck(inputString: string) {
     return inputString.match(/^repeatx (\d+) /) !== null;
@@ -148,10 +149,24 @@ class GibberishResponder extends ResponderModule {
         }
       }
     }
-    return of(source);
+    return ofStatic(source);
   }
   public keywordCheck() {
     return true;
+  }
+}
+
+class TimerResponder extends ResponderModule {
+  name = "timer";
+  description = "Set a timer";
+  constructor(arg: GameServices) {
+    super(arg);
+  }
+  public getResponse$(input: string): Rx.Observable<string | false> {
+    return Rx.timer(3000).pipe(map(() => input));
+  }
+  public keywordCheck(input: string) {
+    return input.match(/^timer\b/) !== null;
   }
 }
 
@@ -163,6 +178,7 @@ export const createResponders = (services: GameServices) => {
     new RepeatXResponder(services),
     new GetVoicesResponder(services),
     new SetVoiceResponder(services),
+    new TimerResponder(services),
     new GibberishResponder(services), // must be last
   ];
 };

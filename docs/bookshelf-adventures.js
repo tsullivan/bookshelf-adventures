@@ -11653,12 +11653,12 @@ ${content}</tr>
       return html;
     }
   };
-  function onError(silent, async, callback) {
+  function onError(silent, async2, callback) {
     return (e11) => {
       e11.message += "\nPlease report this to https://github.com/markedjs/marked.";
       if (silent) {
         const msg = "<p>An error occurred:</p><pre>" + escape(e11.message + "", true) + "</pre>";
-        if (async) {
+        if (async2) {
           return Promise.resolve(msg);
         }
         if (callback) {
@@ -11667,7 +11667,7 @@ ${content}</tr>
         }
         return msg;
       }
-      if (async) {
+      if (async2) {
         return Promise.reject(e11);
       }
       if (callback) {
@@ -13104,6 +13104,190 @@ ${content}</tr>
     return ReplaySubject2;
   }(Subject);
 
+  // node_modules/rxjs/dist/esm5/internal/scheduler/Action.js
+  var Action = function(_super) {
+    __extends(Action2, _super);
+    function Action2(scheduler, work) {
+      return _super.call(this) || this;
+    }
+    Action2.prototype.schedule = function(state, delay) {
+      if (delay === void 0) {
+        delay = 0;
+      }
+      return this;
+    };
+    return Action2;
+  }(Subscription);
+
+  // node_modules/rxjs/dist/esm5/internal/scheduler/intervalProvider.js
+  var intervalProvider = {
+    setInterval: function(handler, timeout) {
+      var args = [];
+      for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+      }
+      var delegate = intervalProvider.delegate;
+      if (delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) {
+        return delegate.setInterval.apply(delegate, __spreadArray([handler, timeout], __read(args)));
+      }
+      return setInterval.apply(void 0, __spreadArray([handler, timeout], __read(args)));
+    },
+    clearInterval: function(handle) {
+      var delegate = intervalProvider.delegate;
+      return ((delegate === null || delegate === void 0 ? void 0 : delegate.clearInterval) || clearInterval)(handle);
+    },
+    delegate: void 0
+  };
+
+  // node_modules/rxjs/dist/esm5/internal/scheduler/AsyncAction.js
+  var AsyncAction = function(_super) {
+    __extends(AsyncAction2, _super);
+    function AsyncAction2(scheduler, work) {
+      var _this = _super.call(this, scheduler, work) || this;
+      _this.scheduler = scheduler;
+      _this.work = work;
+      _this.pending = false;
+      return _this;
+    }
+    AsyncAction2.prototype.schedule = function(state, delay) {
+      var _a;
+      if (delay === void 0) {
+        delay = 0;
+      }
+      if (this.closed) {
+        return this;
+      }
+      this.state = state;
+      var id = this.id;
+      var scheduler = this.scheduler;
+      if (id != null) {
+        this.id = this.recycleAsyncId(scheduler, id, delay);
+      }
+      this.pending = true;
+      this.delay = delay;
+      this.id = (_a = this.id) !== null && _a !== void 0 ? _a : this.requestAsyncId(scheduler, this.id, delay);
+      return this;
+    };
+    AsyncAction2.prototype.requestAsyncId = function(scheduler, _id, delay) {
+      if (delay === void 0) {
+        delay = 0;
+      }
+      return intervalProvider.setInterval(scheduler.flush.bind(scheduler, this), delay);
+    };
+    AsyncAction2.prototype.recycleAsyncId = function(_scheduler, id, delay) {
+      if (delay === void 0) {
+        delay = 0;
+      }
+      if (delay != null && this.delay === delay && this.pending === false) {
+        return id;
+      }
+      if (id != null) {
+        intervalProvider.clearInterval(id);
+      }
+      return void 0;
+    };
+    AsyncAction2.prototype.execute = function(state, delay) {
+      if (this.closed) {
+        return new Error("executing a cancelled action");
+      }
+      this.pending = false;
+      var error = this._execute(state, delay);
+      if (error) {
+        return error;
+      } else if (this.pending === false && this.id != null) {
+        this.id = this.recycleAsyncId(this.scheduler, this.id, null);
+      }
+    };
+    AsyncAction2.prototype._execute = function(state, _delay) {
+      var errored = false;
+      var errorValue;
+      try {
+        this.work(state);
+      } catch (e11) {
+        errored = true;
+        errorValue = e11 ? e11 : new Error("Scheduled action threw falsy error");
+      }
+      if (errored) {
+        this.unsubscribe();
+        return errorValue;
+      }
+    };
+    AsyncAction2.prototype.unsubscribe = function() {
+      if (!this.closed) {
+        var _a = this, id = _a.id, scheduler = _a.scheduler;
+        var actions = scheduler.actions;
+        this.work = this.state = this.scheduler = null;
+        this.pending = false;
+        arrRemove(actions, this);
+        if (id != null) {
+          this.id = this.recycleAsyncId(scheduler, id, null);
+        }
+        this.delay = null;
+        _super.prototype.unsubscribe.call(this);
+      }
+    };
+    return AsyncAction2;
+  }(Action);
+
+  // node_modules/rxjs/dist/esm5/internal/Scheduler.js
+  var Scheduler = function() {
+    function Scheduler2(schedulerActionCtor, now) {
+      if (now === void 0) {
+        now = Scheduler2.now;
+      }
+      this.schedulerActionCtor = schedulerActionCtor;
+      this.now = now;
+    }
+    Scheduler2.prototype.schedule = function(work, delay, state) {
+      if (delay === void 0) {
+        delay = 0;
+      }
+      return new this.schedulerActionCtor(this, work).schedule(state, delay);
+    };
+    Scheduler2.now = dateTimestampProvider.now;
+    return Scheduler2;
+  }();
+
+  // node_modules/rxjs/dist/esm5/internal/scheduler/AsyncScheduler.js
+  var AsyncScheduler = function(_super) {
+    __extends(AsyncScheduler2, _super);
+    function AsyncScheduler2(SchedulerAction, now) {
+      if (now === void 0) {
+        now = Scheduler.now;
+      }
+      var _this = _super.call(this, SchedulerAction, now) || this;
+      _this.actions = [];
+      _this._active = false;
+      return _this;
+    }
+    AsyncScheduler2.prototype.flush = function(action) {
+      var actions = this.actions;
+      if (this._active) {
+        actions.push(action);
+        return;
+      }
+      var error;
+      this._active = true;
+      do {
+        if (error = action.execute(action.state, action.delay)) {
+          break;
+        }
+      } while (action = actions.shift());
+      this._active = false;
+      if (error) {
+        while (action = actions.shift()) {
+          action.unsubscribe();
+        }
+        throw error;
+      }
+    };
+    return AsyncScheduler2;
+  }(Scheduler);
+
+  // node_modules/rxjs/dist/esm5/internal/scheduler/async.js
+  var asyncScheduler = new AsyncScheduler(AsyncAction);
+  var async = asyncScheduler;
+
   // node_modules/rxjs/dist/esm5/internal/observable/empty.js
   var EMPTY = new Observable(function(subscriber) {
     return subscriber.complete();
@@ -13532,6 +13716,11 @@ ${content}</tr>
     return from(args, scheduler);
   }
 
+  // node_modules/rxjs/dist/esm5/internal/util/isDate.js
+  function isValidDate(value) {
+    return value instanceof Date && !isNaN(value);
+  }
+
   // node_modules/rxjs/dist/esm5/internal/operators/map.js
   function map(project, thisArg) {
     return operate(function(source, subscriber) {
@@ -13627,6 +13816,41 @@ ${content}</tr>
       concurrent = Infinity;
     }
     return mergeMap(identity, concurrent);
+  }
+
+  // node_modules/rxjs/dist/esm5/internal/observable/timer.js
+  function timer(dueTime, intervalOrScheduler, scheduler) {
+    if (dueTime === void 0) {
+      dueTime = 0;
+    }
+    if (scheduler === void 0) {
+      scheduler = async;
+    }
+    var intervalDuration = -1;
+    if (intervalOrScheduler != null) {
+      if (isScheduler(intervalOrScheduler)) {
+        scheduler = intervalOrScheduler;
+      } else {
+        intervalDuration = intervalOrScheduler;
+      }
+    }
+    return new Observable(function(subscriber) {
+      var due = isValidDate(dueTime) ? +dueTime - scheduler.now() : dueTime;
+      if (due < 0) {
+        due = 0;
+      }
+      var n9 = 0;
+      return scheduler.schedule(function() {
+        if (!subscriber.closed) {
+          subscriber.next(n9++);
+          if (0 <= intervalDuration) {
+            this.schedule(void 0, intervalDuration);
+          } else {
+            subscriber.complete();
+          }
+        }
+      }, due);
+    });
   }
 
   // node_modules/rxjs/dist/esm5/internal/observable/merge.js
@@ -13973,6 +14197,9 @@ ${content}</tr>
       this.services = services;
     }
   };
+  var ofStatic = (input) => {
+    return of(input);
+  };
   var HelpResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
@@ -13980,7 +14207,7 @@ ${content}</tr>
       this.description = "This gets you help information.";
     }
     getResponse$() {
-      return of(
+      return ofStatic(
         this.services.getCommands().reduce((final, { command, description }) => {
           const prefix = final ? final + "\n\n" : "";
           return prefix + `**${command}**:
@@ -14001,12 +14228,9 @@ ${description}`;
     }
     getResponse$(command) {
       command = command.toLowerCase();
-      if (command !== "mute" && command !== "unmute") {
-        return of(false);
-      }
       this._isMuted = command === "mute";
       this.services.setIsMuted(this._isMuted);
-      return of(this._isMuted ? "Muted." : "Unmuted.");
+      return ofStatic(this._isMuted ? "Muted." : "Unmuted.");
     }
     keywordCheck(inputString) {
       return inputString.match(/^(mute|unmute)$/) !== null;
@@ -14020,7 +14244,7 @@ ${description}`;
     }
     getResponse$() {
       const voices = this.services.getVoices();
-      return of(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
+      return ofStatic(voices.map((voice) => `${voice.name}: (${voice.lang})`).join());
     }
     keywordCheck(inputString) {
       return inputString.match(/^(get_voices|voices)$/) !== null;
@@ -14037,7 +14261,7 @@ ${description}`;
       const voices = this.services.getVoices();
       const newVoice = voices[voiceIndex];
       this.services.setUserVoice(newVoice);
-      return of(`Set user voice to ${newVoice.name}`);
+      return ofStatic(`Set user voice to ${newVoice.name}`);
     }
     keywordCheck(inputString) {
       return inputString.match(/^set_voice \d+$/) !== null;
@@ -14050,7 +14274,7 @@ ${description}`;
       this.description = "This repeats something.";
     }
     getResponse$(input) {
-      return of(input.replace(/^repeat /, ""));
+      return ofStatic(input.replace(/^repeat /, ""));
     }
     keywordCheck(inputString) {
       return inputString.match(/^repeat\b/) !== null;
@@ -14069,7 +14293,7 @@ ${description}`;
       for (let repeats = 0; repeats < repeatTimes; repeats++) {
         result += " " + whatToRepeat;
       }
-      return of(result);
+      return ofStatic(result);
     }
     keywordCheck(inputString) {
       return inputString.match(/^repeatx (\d+) /) !== null;
@@ -14110,10 +14334,23 @@ ${description}`;
           }
         }
       }
-      return of(source);
+      return ofStatic(source);
     }
     keywordCheck() {
       return true;
+    }
+  };
+  var TimerResponder = class extends ResponderModule {
+    constructor(arg) {
+      super(arg);
+      this.name = "timer";
+      this.description = "Set a timer";
+    }
+    getResponse$(input) {
+      return timer(3e3).pipe(map(() => input));
+    }
+    keywordCheck(input) {
+      return input.match(/^timer\b/) !== null;
     }
   };
   var createResponders = (services) => {
@@ -14124,6 +14361,7 @@ ${description}`;
       new RepeatXResponder(services),
       new GetVoicesResponder(services),
       new SetVoiceResponder(services),
+      new TimerResponder(services),
       new GibberishResponder(services)
       // must be last
     ];

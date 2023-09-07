@@ -14299,18 +14299,20 @@ ${description}`;
     }
     getResponse$(rawInput) {
       const voices = this.services.getVoices();
+      let locale = null;
       if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
-        const locale = rawInput.replace(
+        locale = rawInput.replace(
           /^(?:get_voices|voices) ([a-z][a-z]-[A-Z][A-Z])$/,
           "$1"
         );
-        return ofStatic(
-          voices.filter((voice) => voice.lang === locale).map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
-        );
       }
-      return ofStatic(
-        voices.map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
-      );
+      const staticString = voices.map((voice, index) => {
+        if (voice.lang === locale || locale == null) {
+          return `${index}. ${voice.name}: (${voice.lang})`;
+        }
+        return false;
+      }).filter(Boolean).join("\n");
+      return ofStatic(staticString);
     }
     keywordCheck(rawInput) {
       const input = rawInput.toLowerCase();
@@ -14325,7 +14327,10 @@ ${description}`;
     }
     getResponse$(input) {
       const voices = this.services.getVoices();
-      const voiceToChange = input.replace(/^set_voice (user|computer).*$/, "$1");
+      const voiceToChange = input.replace(
+        /^set_voice (user|computer).*$/,
+        "$1"
+      );
       const voiceIndex = parseInt(
         input.replace(/^set_voice (?:user|computer) (\d+)/, "$1")
       );

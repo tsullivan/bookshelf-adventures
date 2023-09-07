@@ -124,22 +124,25 @@ class GetVoicesResponder extends ResponderModule {
   getResponse$(rawInput: string) {
     const voices = this.services.getVoices();
 
+    let locale: string | null = null;
     if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
-      const locale = rawInput.replace(
+      locale = rawInput.replace(
         /^(?:get_voices|voices) ([a-z][a-z]-[A-Z][A-Z])$/,
         "$1"
       );
-      return ofStatic(
-        voices
-          .filter((voice) => voice.lang === locale)
-          .map((voice) => `1. ${voice.name}: (${voice.lang})`)
-          .join("\n")
-      );
     }
 
-    return ofStatic(
-      voices.map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
-    );
+    const staticString = voices
+      .map((voice, index) => {
+        if (voice.lang === locale || locale == null) {
+          return `[${index + 1}] ${voice.name}: (${voice.lang})`;
+        }
+        return false;
+      })
+      .filter(Boolean)
+      .join("\n\n");
+
+    return ofStatic(staticString);
   }
   keywordCheck(rawInput: string) {
     const input = rawInput.toLowerCase();
@@ -154,9 +157,10 @@ class SetVoiceResponder extends ResponderModule {
   getResponse$(input: string) {
     const voices = this.services.getVoices();
 
-    const voiceToChange = input.replace(/^set_voice (user|computer).*$/, "$1") as
-      | "user"
-      | "computer";
+    const voiceToChange = input.replace(
+      /^set_voice (user|computer).*$/,
+      "$1"
+    ) as "user" | "computer";
     const voiceIndex = parseInt(
       input.replace(/^set_voice (?:user|computer) (\d+)/, "$1")
     );

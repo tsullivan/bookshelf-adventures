@@ -3,8 +3,6 @@ import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
 import { Responder } from "./responder";
 import type { createUsers } from "./user";
 
-const PROTAGONIST = "Shelfie";
-
 export interface CommandInfo {
   command: string;
   description: string;
@@ -53,9 +51,10 @@ export class Game {
         return this.responder.getCommands();
       },
       getVoices: () => {
+        // initialize the voices array
         if (this._voices.length === 0) {
-          const voices = this.deps.synth.getVoices();
-          this._voices = voices;
+          console.log('collect voices');
+          this._voices = this.deps.synth.getVoices();
         }
         return this._voices;
       },
@@ -97,10 +96,9 @@ export class Game {
     this.input$
       .pipe(
         tap((input) => {
-          if (!this._isMuted) {
-            this.deps.synth.cancel(); // allow user to cancel computer's speech
-            this.deps.users.user_1.speak(input);
-          }
+          // NOTE muted is ignored
+          this.deps.synth.cancel(); // cancel computer's speech, if active
+          this.deps.users.user_1.speak(input);
         })
       )
       .subscribe();
@@ -110,7 +108,7 @@ export class Game {
       map((name) => {
         // handle username provided
         this.deps.users.user_1.name = name;
-        return `Hello, ${name}! My name is ${PROTAGONIST}.`;
+        return `Hello, ${name}!.`;
       })
     );
     const takeChats$ = this.input$.pipe(

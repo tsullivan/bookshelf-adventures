@@ -121,38 +121,65 @@ class MuteUnmuteResponder extends ResponderModule {
 class GetVoicesResponder extends ResponderModule {
   name = "get_voices";
   description = "Get a list of the voices that can be used to hear the text";
-  getResponse$() {
+  getResponse$(rawInput: string) {
     const voices = this.services.getVoices();
+
+    if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
+      const locale = rawInput.replace(
+        /^(?:get_voices|voices) ([a-z][a-z]-[A-Z][A-Z])$/,
+        "$1"
+      );
+      return ofStatic(
+        voices
+          .filter((voice) => voice.lang === locale)
+          .map((voice) => `1. ${voice.name}: (${voice.lang})`)
+          .join("\n")
+      );
+    }
+
     return ofStatic(
       voices.map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
     );
   }
   keywordCheck(rawInput: string) {
     const input = rawInput.toLowerCase();
-    return input.match(/^(get_voices|voices)$/) !== null;
+    return input.match(/^(get_voices|voices)\b/) !== null;
   }
 }
 
 class SetVoiceResponder extends ResponderModule {
   name = "set_voice";
-  description = "Set the voice you hear that read the things";
+  description =
+    "Set the voice you hear that read the things. Type 'set_voice user 2' or 'set_voice computer 1'";
   getResponse$(input: string) {
-    // TODO: support set_my_voice, set_shelfie_voice
     const voices = this.services.getVoices();
-    const voiceIndex = parseInt(input.replace(/^set_voice (\d+)/, "$1"));
-    if (isNaN(voiceIndex)) {
-      return ofStatic("type 'set_voice <number>'");
-    }
+
+    const voiceToChange = input.replace(/^set_voice (user|computer).*$/, "$1") as
+      | "user"
+      | "computer";
+    const voiceIndex = parseInt(
+      input.replace(/^set_voice (?:user|computer) (\d+)/, "$1")
+    );
     const newVoice = voices[voiceIndex - 1] as SpeechSynthesisVoice | undefined;
-    if (typeof newVoice !== "undefined") {
-      this.services.setUserVoice(newVoice);
-      return ofStatic(`Set user voice to ${newVoice.name}`);
+
+    if (newVoice) {
+      if (voiceToChange === "computer") {
+        this.services.setComputerVoice(newVoice);
+        return ofStatic(`Set computer voice to ${newVoice.name}`);
+      }
+      if (voiceToChange === "user") {
+        this.services.setUserVoice(newVoice);
+        return ofStatic(`Set user voice to ${newVoice.name}`);
+      }
     }
-    return ofStatic(`Unknown voice ${voiceIndex}`);
+
+    return ofStatic(
+      "type 'set_voice user|computer <number>'. type 'get_voices' to see the voice numbers"
+    );
   }
   keywordCheck(rawInput: string) {
     const input = rawInput.toLowerCase();
-    return input.match(/^set_voice \d+$/) !== null;
+    return input.match(/^set_voice\b/) !== null;
   }
 }
 

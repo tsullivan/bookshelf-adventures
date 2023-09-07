@@ -12,7 +12,8 @@ export interface CommandInfo {
 
 export interface GameServices {
   getCommands: () => CommandInfo[];
-  getVoices: SpeechSynthesis["getVoices"];
+  getVoices: () => SpeechSynthesisVoice[];
+  setComputerVoice: (voice: SpeechSynthesisVoice) => void;
   setUserVoice: (voice: SpeechSynthesisVoice) => void;
   setIsMuted: (value: boolean) => void;
 }
@@ -38,6 +39,7 @@ export class Game {
   private output$ = new Rx.ReplaySubject<string>();
   private responder: Responder;
   private _isMuted = false;
+  private _voices: SpeechSynthesisVoice[] = [];
 
   private readonly _services: GameServices;
 
@@ -51,7 +53,14 @@ export class Game {
         return this.responder.getCommands();
       },
       getVoices: () => {
-        return this.deps.synth.getVoices();
+        if (this._voices.length === 0) {
+          const voices = this.deps.synth.getVoices();
+          this._voices = voices;
+        }
+        return this._voices;
+      },
+      setComputerVoice: (voice: SpeechSynthesisVoice) => {
+        this.deps.users.computer_1.voice = voice;
       },
       setUserVoice: (voice: SpeechSynthesisVoice) => {
         this.deps.users.user_1.voice = voice;
@@ -89,7 +98,7 @@ export class Game {
       .pipe(
         tap((input) => {
           if (!this._isMuted) {
-            this.deps.synth.cancel() // allow user to cancel computer's speech
+            this.deps.synth.cancel(); // allow user to cancel computer's speech
             this.deps.users.user_1.speak(input);
           }
         })

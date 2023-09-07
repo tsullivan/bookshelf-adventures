@@ -17,18 +17,35 @@ const ofStatic = (input: string) => {
 };
 
 class GibberishResponder extends ResponderModule {
+  _vocabulary: Vocabulary;
+  _isGibberish = true;
   name = "default";
-  description = "Mad-libs like gibberish";
-  vocabulary: Vocabulary;
+  description =
+    `Mad-libs like gibberish. Type 'gibberish_` +
+    `${this._isGibberish ? "off" : "on"}'` +
+    ` to control the gibberish. Gibberish is: ` +
+    `${this._isGibberish ? "on" : "off"}`;
   constructor(arg: GameServices) {
     super(arg);
     const { vocabulary } = getDictionary();
     console.log(vocabulary);
-    this.vocabulary = vocabulary;
+    this._vocabulary = vocabulary;
   }
   getResponse$(rawInput: string) {
-    // TODO: allow gibberish to be turned off
     const input = rawInput.trim().toLowerCase();
+    let _isControlStatement = false;
+    if (input === "gibberish_off") {
+      this._isGibberish = false;
+      _isControlStatement = true;
+    }
+    if (input === "gibberish_on") {
+      this._isGibberish = true;
+      _isControlStatement = true;
+    }
+    if (_isControlStatement) {
+      return ofStatic(`gibberish controls set to ${this._isGibberish}`);
+    }
+
     const { dictionary } = getDictionary();
     // search the dictionary data in a random order
     const texts = shuffle(Object.values(dictionary).flatMap((text) => text));
@@ -53,7 +70,7 @@ class GibberishResponder extends ResponderModule {
           const [kind, thing] = subMatches.splice(1, 2);
           const nextThing = thing.toLowerCase().includes(input)
             ? thing
-            : sample(this.vocabulary[kind]);
+            : sample(this._vocabulary[kind]);
 
           source = source.replace(m, nextThing);
         }
@@ -79,8 +96,9 @@ class HelpResponder extends ResponderModule {
         }, "")
     );
   }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^(help|what)\b/) !== null;
+  public keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^(help|what)\b/) !== null;
   }
 }
 
@@ -94,8 +112,9 @@ class MuteUnmuteResponder extends ResponderModule {
     this.services.setIsMuted(isMuted);
     return ofStatic(isMuted ? "Muted." : "Unmuted.");
   }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^(mute|unmute)$/) !== null;
+  public keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^(mute|unmute)$/) !== null;
   }
 }
 
@@ -108,8 +127,9 @@ class GetVoicesResponder extends ResponderModule {
       voices.map((voice) => `1. ${voice.name}: (${voice.lang})`).join("\n")
     );
   }
-  keywordCheck(inputString: string) {
-    return inputString.match(/^(get_voices|voices)$/) !== null;
+  keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^(get_voices|voices)$/) !== null;
   }
 }
 
@@ -130,8 +150,9 @@ class SetVoiceResponder extends ResponderModule {
     }
     return ofStatic(`Unknown voice ${voiceIndex}`);
   }
-  keywordCheck(inputString: string) {
-    return inputString.match(/^set_voice \d+$/) !== null;
+  keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^set_voice \d+$/) !== null;
   }
 }
 
@@ -141,8 +162,9 @@ class RepeatResponder extends ResponderModule {
   getResponse$(input: string) {
     return ofStatic(input.replace(/^(repeat|say) /, ""));
   }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^(repeat|say)\b/) !== null;
+  public keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^(repeat|say)\b/) !== null;
   }
 }
 
@@ -166,8 +188,9 @@ class RepeatXResponder extends ResponderModule {
     }
     return ofStatic(result);
   }
-  public keywordCheck(inputString: string) {
-    return inputString.match(/^repeatx (\d+) /) !== null;
+  public keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
+    return input.match(/^repeatx (\d+) /) !== null;
   }
 }
 
@@ -190,7 +213,8 @@ class TimerResponder extends ResponderModule {
     const thingToSay = input.replace(/^timer \d+s (.*)$/, "$1");
     return Rx.timer(timeoutTime * 1000).pipe(map(() => thingToSay));
   }
-  public keywordCheck(input: string) {
+  public keywordCheck(rawInput: string) {
+    const input = rawInput.toLowerCase();
     return input.match(/^timer\b/) !== null;
   }
 }

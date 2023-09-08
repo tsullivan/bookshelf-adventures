@@ -14193,8 +14193,8 @@ ${content}</tr>
 
   // src/lib/responders.ts
   var ResponderModule = class {
-    constructor(services) {
-      this.services = services;
+    constructor(services2) {
+      this.services = services2;
     }
   };
   var ofStatic = (input) => {
@@ -14308,10 +14308,10 @@ ${description}`;
       }
       const staticString = voices.map((voice, index) => {
         if (voice.lang === locale || locale == null) {
-          return `${index}. ${voice.name}: (${voice.lang})`;
+          return `[${index + 1}] ${voice.name}: (${voice.lang})`;
         }
         return false;
-      }).filter(Boolean).join("\n");
+      }).filter(Boolean).join("  \n");
       return ofStatic(staticString);
     }
     keywordCheck(rawInput) {
@@ -14418,25 +14418,25 @@ ${description}`;
       return input.match(/^timer\b/) !== null;
     }
   };
-  var createResponders = (services) => {
+  var createResponders = (services2) => {
     return [
-      new HelpResponder(services),
-      new MuteUnmuteResponder(services),
-      new RepeatResponder(services),
-      new RepeatXResponder(services),
-      new GetVoicesResponder(services),
-      new SetVoiceResponder(services),
-      new TimerResponder(services),
-      new GibberishResponder(services)
+      new HelpResponder(services2),
+      new MuteUnmuteResponder(services2),
+      new RepeatResponder(services2),
+      new RepeatXResponder(services2),
+      new GetVoicesResponder(services2),
+      new SetVoiceResponder(services2),
+      new TimerResponder(services2),
+      new GibberishResponder(services2)
       // must be last
     ];
   };
 
   // src/lib/responder.ts
   var Responder = class {
-    constructor(services) {
+    constructor(services2) {
       this.modules = [];
-      createResponders(services).forEach((responder) => {
+      createResponders(services2).forEach((responder) => {
         this.addResponder(responder);
       });
     }
@@ -14459,32 +14459,31 @@ ${description}`;
     }
   };
 
-  // src/lib/game.ts
-  var PROTAGONIST = "Shelfie";
+  // src/lib/services.ts
   var LOG_DEBUG = "debug" /* DEBUG */;
-  var Game = class {
+  var Services = class {
     constructor(input$, deps, onMessage) {
       this.input$ = input$;
       this.deps = deps;
       this.output$ = new ReplaySubject();
-      this._isMuted = false;
-      this._voices = [];
+      this.isMuted = false;
+      this.voices = [];
       this.log = (level, message) => {
         console.log(`[Game/${level}] ${message}`);
       };
       this.writeOutput = (nextOutput) => {
         this.output$.next(nextOutput);
       };
-      this._services = {
+      this.services = {
         getCommands: () => {
           return this.responder.getCommands();
         },
         getVoices: () => {
-          if (this._voices.length === 0) {
-            const voices = this.deps.synth.getVoices();
-            this._voices = voices;
+          if (this.voices.length === 0) {
+            console.log("collect voices");
+            this.voices = this.deps.synth.getVoices();
           }
-          return this._voices;
+          return this.voices;
         },
         setComputerVoice: (voice) => {
           this.deps.users.computer_1.voice = voice;
@@ -14493,10 +14492,10 @@ ${description}`;
           this.deps.users.user_1.voice = voice;
         },
         setIsMuted: (value) => {
-          this._isMuted = value;
+          this.isMuted = value;
         }
       };
-      this.responder = new Responder(this._services);
+      this.responder = new Responder(this.services);
       this.output$.subscribe(onMessage);
     }
     /* DOMContentLoaded */
@@ -14510,17 +14509,15 @@ ${description}`;
       this.writeOutput("Hello! What is your name?");
       this.input$.pipe(
         tap((input) => {
-          if (!this._isMuted) {
-            this.deps.synth.cancel();
-            this.deps.users.user_1.speak(input);
-          }
+          this.deps.synth.cancel();
+          this.deps.users.user_1.speak(input);
         })
       ).subscribe();
       const takeName$ = this.input$.pipe(
         take(1),
         map((name) => {
           this.deps.users.user_1.name = name;
-          return `Hello, ${name}! My name is ${PROTAGONIST}.`;
+          return `Hello, ${name}!.`;
         })
       );
       const takeChats$ = this.input$.pipe(
@@ -14532,7 +14529,7 @@ ${description}`;
         })
       );
       merge(takeName$, takeChats$).pipe(filter(Boolean)).subscribe((outputStr) => {
-        if (!this._isMuted) {
+        if (!this.isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
         this.writeOutput(outputStr);
@@ -14574,6 +14571,7 @@ ${description}`;
   };
   var createUsers = (deps) => {
     const computer_1 = new User(deps, 0);
+    computer_1.name = "Shelfie";
     const user_1 = new User(deps, 1);
     return { computer_1, user_1 };
   };
@@ -14593,19 +14591,19 @@ ${description}`;
         message
       });
     };
-    const game2 = new Game(input$, gameDeps, onMessage);
-    return { game: game2, gameUi: gameUi2 };
+    const gameServices = new Services(input$, gameDeps, onMessage);
+    return { services: gameServices, gameUi: gameUi2 };
   }
-  var { game, gameUi } = browser();
+  var { services, gameUi } = browser();
   document.addEventListener("DOMContentLoaded", () => {
-    game.setup();
+    services.setup();
   });
   window.onload = () => {
     const canvasEl = document.getElementById("canvas");
     if (!canvasEl)
       throw new Error(`Start error: invalid HTML`);
     canvasEl.replaceChildren(gameUi);
-    game.start();
+    services.start();
     document.title = "Bookshelf Adventures";
   };
 })();

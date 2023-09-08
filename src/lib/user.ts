@@ -42,6 +42,9 @@ export class User {
 
 export const createUsers = (deps: UserDeps) => {
   const computer_1 = new User(deps, 0);
+  computer_1.name = "Shelfie";
+
   const user_1 = new User(deps, 1);
+
   return { computer_1, user_1 };
 };

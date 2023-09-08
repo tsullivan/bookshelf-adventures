@@ -1,4 +1,4 @@
-import { CommandInfo, GameServices } from "./game";
+import { CommandInfo, GameServices } from "./services";
 import { ResponderModule, createResponders } from "./responders";
 
 export class Responder {

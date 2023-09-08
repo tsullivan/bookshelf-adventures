@@ -33,30 +33,28 @@ const LOG_DEBUG = LogLevel.DEBUG;
 // const LOG_INFO = LogLevel.INFO;
 type LogFn = (level: LogLevel, message: string | Error) => void;
 
-export class Game {
-  private output$ = new Rx.ReplaySubject<string>();
-  private responder: Responder;
-  private _isMuted = false;
-  private _voices: SpeechSynthesisVoice[] = [];
-
-  private readonly _services: GameServices;
-
+export class Services {
+  private readonly output$ = new Rx.ReplaySubject<string>();
+  private readonly responder: Responder;
+  private readonly services: GameServices;
+  private isMuted = false;
+  private voices: SpeechSynthesisVoice[] = [];
   constructor(
     private input$: Rx.Observable<string>,
     private deps: GameDeps,
     onMessage: (message: string) => void
   ) {
-    this._services = {
+    this.services = {
       getCommands: () => {
         return this.responder.getCommands();
       },
       getVoices: () => {
         // initialize the voices array
-        if (this._voices.length === 0) {
+        if (this.voices.length === 0) {
           console.log('collect voices');
-          this._voices = this.deps.synth.getVoices();
+          this.voices = this.deps.synth.getVoices();
         }
-        return this._voices;
+        return this.voices;
       },
       setComputerVoice: (voice: SpeechSynthesisVoice) => {
         this.deps.users.computer_1.voice = voice;
@@ -65,10 +63,10 @@ export class Game {
         this.deps.users.user_1.voice = voice;
       },
       setIsMuted: (value: boolean) => {
-        this._isMuted = value;
+        this.isMuted = value;
       },
     };
-    this.responder = new Responder(this._services);
+    this.responder = new Responder(this.services);
     this.output$.subscribe(onMessage);
   }
 
@@ -124,7 +122,7 @@ export class Game {
     Rx.merge(takeName$, takeChats$)
       .pipe(filter(Boolean))
       .subscribe((outputStr) => {
-        if (!this._isMuted) {
+        if (!this.isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
         this.writeOutput(outputStr);

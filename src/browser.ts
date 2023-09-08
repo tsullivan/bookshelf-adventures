@@ -1,5 +1,5 @@
 import "./components";
-import { Game, GameDeps } from "./lib/game";
+import { Services, GameDeps } from "./lib/services";
 import { createUsers } from "./lib/user";
 
 function browser() {
@@ -18,22 +18,22 @@ function browser() {
       message,
     });
   };
-  const game = new Game(input$, gameDeps, onMessage);
+  const gameServices = new Services(input$, gameDeps, onMessage);
 
-  return { game, gameUi };
+  return { services: gameServices, gameUi };
 }
 
-const { game, gameUi } = browser();
+const { services, gameUi } = browser();
 
 // Begin
 document.addEventListener("DOMContentLoaded", () => {
-  game.setup();
+  services.setup();
 });
 
 window.onload = () => {
   const canvasEl = document.getElementById("canvas") as HTMLDivElement;
   if (!canvasEl) throw new Error(`Start error: invalid HTML`);
   canvasEl.replaceChildren(gameUi);
-  game.start();
+  services.start();
   document.title = "Bookshelf Adventures";
 };

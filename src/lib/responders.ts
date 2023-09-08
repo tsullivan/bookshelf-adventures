@@ -1,7 +1,7 @@
 import * as Rx from "rxjs";
 import { map } from "rxjs/operators";
 import { Vocabulary, getDictionary } from "./dictionary";
-import { GameServices } from "./game";
+import { GameServices } from "./services";
 import { sample, shuffle } from "./utils";
 
 export abstract class ResponderModule {
@@ -140,7 +140,7 @@ class GetVoicesResponder extends ResponderModule {
         return false;
       })
       .filter(Boolean)
-      .join("\n\n");
+      .join("  \n");
 
     return ofStatic(staticString);
   }

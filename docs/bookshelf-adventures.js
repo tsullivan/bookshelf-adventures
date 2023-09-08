@@ -14052,19 +14052,19 @@ ${content}</tr>
     ],
     ninjafacts: [
       "${noun:Ninja}s have ${noun:sword}s",
-      "${noun:Ninja}s have ${noun:karate powers}",
+      "${noun:Ninja}s have ${noun:karate power}s",
       "${noun:Ninja}s have ${noun:mask}s that ${verb:cover} their ${noun:mouth}.",
       "${noun:Ninja}s can ${verb:do karate} like Hai Ya! Ka Pow!",
       "${noun:Ninja}s are always ${adjective:black}, and they can ${verb:camouflage} in the ${noun:darkness} because they are ${adjective:black}."
     ],
     pokemonfacts: [
       "There's a ${noun:Pokemon} with ${noun:laser}s on his ${noun:back} and he can ${verb:shoot}. He has ${noun:laser}s on his ${noun:hand}s as well. His ${noun:eye}s don't have ${noun:laser}s.",
-      "${noun:Pikachu} is ${adjective:really good}. He gets ${noun:fire}, meaning he can ${verb:shoot fire} out of his hands. He gets ${noun:laser eyes}. If someone ${verb:touches} him, they get ${adjective:electrocuted}.",
+      "${noun:Pikachu} is ${adjective:really good}. He gets ${noun:fire}, meaning he can ${verb:shoot fire} out of his hands. He gets ${noun:laser eye}s. If someone ${verb:touch}es him, they get ${adjective:electrocuted}.",
       "There's a ${noun:Pokemon} named ${noun:690}. He's a ${noun:robot}. ${noun:690} is also a ${noun:number} and it's ${adjective:so big} that if you try to count it, you ${verb:die}.",
       "There's a ${noun:snake Pokemon}. He just is a ${noun:snake}. There's nothing else about him.",
       "There's a ${noun:Pokemon} named ${noun:Cutter Head}. He can ${verb:cut} things on his ${noun:head}. He's a ${noun:bad guy}.",
-      "There's a ${noun:Pokemon} named ${noun:Shark Head}. He has a ${noun:shark} ${noun:head} and a ${noun:cheetah} body. He has ${noun:spike}s on his ${noun:back}. He has ${noun:special swords}, and he's actually a ${noun:human} who's really ${adjective:strong}. The ${noun:sword}s turn to ${noun:fire} and he can ${verb:slice} ${noun:people}.",
-      "${noun:Star Pikachu} can ${verb:shootlasers} out of his ${noun:body}, and he can ${verb:shoot lasers} all over his ${noun:body}."
+      "There's a ${noun:Pokemon} named ${noun:Shark Head}. He has a ${noun:shark} ${noun:head} and a ${noun:cheetah} body. He has ${noun:spike}s on his ${noun:back}. He has ${noun:special sword}s, and he's actually a ${noun:human} who's really ${adjective:strong}. The ${noun:sword}s turn to ${noun:fire} and he can ${verb:slice} ${noun:people}.",
+      "${noun:Star Pikachu} can ${verb:shoot laser}s out of his ${noun:body}, and he can ${verb:shoot laser}s all over his ${noun:body}."
     ],
     mariofacts: [
       "${noun:Mario} is a ${adjective:talented plumber} who can ${verb:shoot} ${noun:fireball}s out of his ${noun:hand}s in alternate dimensions with a ${noun:special flower} and known for rescuing ${noun:Peach} from the clutches of ${noun:Bowser}.",
@@ -14085,28 +14085,28 @@ ${content}</tr>
       "${noun:Darth Maul} ${verb:has} two ${noun:lightsaber}s that ${verb:come} out of his ${noun:lightsaber hilt}.",
       "${noun:Darth Vader} is a ${noun:good guy} at the ${noun:end} but most of the time he was a ${noun:bad guy} except when he was ${noun:Anakin}",
       "${noun:Kylo Ren} ${noun:broke} his ${noun:mask} by ${verb:hitting} it on a ${noun:wall} and then ${verb:throwing} it on the ${noun:ground} really hard.",
-      "${noun:Storm Troopers} are just ${noun:people} wearing armor. They do not have ${noun:super powers}.",
+      "${noun:Storm Trooper}s are just ${noun:people} wearing armor. They do not have ${noun:super power}s.",
       "${noun:Leia} is a ${noun:princess} ${noun:Jedi}.",
       "${noun:Darth Vader} ${verb:cut} ${noun:Luke Skywalker}'s ${noun:hand} off."
     ],
     superherofacts: [
       "${noun:Aquaman} is an ${noun:alien} because he ${verb:comes} from the ${noun:water}.",
-      "${noun:Batman} does NOT have ${noun:super powers}. He just ${verb:likes to team up} with the other members of the ${noun:Justice League} that do ${verb:have super powers}.",
+      "${noun:Batman} does NOT have ${noun:super power}s. He just ${verb:likes to team up} with the other members of the ${noun:Justice League} that do ${verb:have super power}s.",
       "${noun:Batman} made the ${noun:ship} that ${noun:Superman} took from ${noun:Krypton} to ${noun:Earth}",
-      "${noun:Cyborg} ${verb:likes to make} ${noun:upgrade}s to the ${noun:Hall of Justice}, and he ${verb:likes} to ${verb:surprise} ${noun:Martian Manhunter}.",
-      "${noun:Power Rangers} ${verb:wear} ${noun:mask}s when they ${verb:fight}.",
+      "${noun:Cyborg} ${verb:likes to make} ${noun:upgrade}s to the ${noun:Hall of Justice}, and he ${verb:like}s to ${verb:surprise} ${noun:Martian Manhunter}.",
+      "${noun:Power Ranger}s ${verb:wear} ${noun:mask}s when they ${verb:fight}.",
       "${noun:Superman} is an ${noun:alien} because he comes from ${noun:planet Krypton}, but now his ${noun:home} is ${noun:Earth}.",
-      "${noun:Batman} ${verb:throws} ${noun:batarang}s when there's ${noun:bad guys}.",
+      "${noun:Batman} ${verb:throw}s ${noun:batarang}s when there's ${noun:bad guy}s.",
       "${noun:Cyborg} makes his ${noun:hand} into a ${noun:fist} to make it into a ${noun:laser}.",
       "${noun:Green Lantern} makes ${noun:stuff} come out of his ${noun:ring}.",
-      "${noun:Spider Man} ${verb:thwips} out ${noun:web}s when he ${verb:points} his ${noun:finger}s ${adjective:right}.",
-      "${noun:Superman} gets out ${noun:laser eyes} when he gets really ${adjective:angry}.",
+      "${noun:Spider Man} ${verb:thwip}s out ${noun:web}s when he ${verb:point}s his ${noun:finger}s ${adjective:right}.",
+      "${noun:Superman} gets out ${noun:laser eye}s when he gets really ${adjective:angry}.",
       "${noun:The Dog Man} is very ${adjective:strong} and he's made out of ${noun:Ding-Dong Magoo}.",
-      "When ${noun:Krypton} ${verb:appears}, ${noun:people} ${verb:fly} there to ${verb:live} there.",
+      "When ${noun:Krypton} ${verb:appear}s, ${noun:people} ${verb:fly} there to ${verb:live} there.",
       "When the ${noun:dog} and the ${noun:cop} appeared to ${verb:capture} a ${noun:criminal}, then ${noun:Petey} appeared and it ${verb:turned into} a ${adjective:HUGE} ${noun:explosion} that made the ${noun:dog and the cop} have to go to the ${noun:hospital}, and then the ${noun:nurse} had a ${noun:very good idea}, then they sewed the ${noun:dog's head} onto the ${noun:cop's body}, then he ${verb:turned into} ${noun:The Mighty Dog Man}!",
       "${noun:Wonder Woman} makes ${noun:anyone} under her ${noun:control}.",
       "${noun:Dog Man} is a ${noun:dog} who like ${verb:chewing} ${noun:bone}s and the ${noun:cop} and ${noun:Greg} went to a ${noun:bomb} but ${noun:Petey} went to ${verb:rescue} the ${noun:robber} and they got in a ${noun:big explosion} then the ${noun:cop} tried to ${verb:unlock} the ${noun:bomb} and they ${verb:cut} through and it went to a ${noun:big explosion}.",
-      "${noun:Robin} is a ${noun:good guy} who ${verb:likes} to ${verb:learn} how to be ${noun:Nightwing}",
+      "${noun:Robin} is a ${noun:good guy} who ${verb:like}s to ${verb:learn} how to be ${noun:Nightwing}",
       "${noun:Plusser Man} is a ${noun:superhero} that needs ${noun:power} for the ${noun:ship} that could ${verb:zap} on the ${noun:other} ${noun:anything} and it could ${verb:ram} and it could do a ${noun:big explosion} and zezezezezezezezezezezezezezezezezez zez zez zezez zez zez zezez zez zez no zez hahahha haha ha ha zez zez zez no ${verb:zeslap} it on your ${noun:face}",
       "${noun:Spider-Man} can ${verb:shoot} out ${noun:web}s",
       "${noun:Iron Man} can ${verb:shoot} out ${noun:blast}s.",
@@ -14125,18 +14125,18 @@ ${content}</tr>
       "When people ${verb:say} ${verb:pick} up your ${noun:room} it just means ${verb:cleaning up}",
       "${noun:Car}s have ${noun:tire}s and also ${noun:tire}s belong to ${noun:car}s",
       "${noun:Flag}s are for states",
-      "${noun:Police}s only ${verb:catches} bad guys OR they could be a stop ${noun:people}.",
-      "You could ${verb:shoot bubbles} out of your ${noun:bubble gun} OR you could do it from a ${adjective:magical} bubble wand",
+      "${noun:Police}s only ${verb:catch}es bad guys OR they could be a stop ${noun:people}.",
+      "You could ${verb:shoot bubble}s out of your ${noun:bubble gun} OR you could do it from a ${adjective:magical} bubble wand",
       "The best ${noun:food} is ${noun:pho}",
       "${noun:Vegetable}s make you ${adjective:healthy}",
       "${noun:Fish} has ${noun:omega 3}. That's a type of ${noun:oil} that's ${adjective:good} for your ${noun:body}.",
       "${noun:Superhero}es are just from televisions, books and legos",
       "${noun:Earth} is ${adjective:the best} ${noun:planet}",
-      "${noun:Pluto} is ${adjective:the second best} ${noun:planet.} You could make ${noun:snow mans}",
+      "${noun:Pluto} is ${adjective:the second best} ${noun:planet.} You could make ${noun:snow man}s",
       "${noun:Rock}s are ${adjective:hard}. Sometimes you could make them into ${noun:lava}",
-      "${noun:Hard rocks} can make a hard slam when you ${verb:break} them into a ${noun:window}.",
+      "${noun:Hard rock}s can make a hard slam when you ${verb:break} them into a ${noun:window}.",
       "${noun:Glass} is not that ${adjective:hard}. It cracks and if you ${verb:pound} it too hard, the ${noun:window} could ${verb:BREAK}!",
-      "People probably used to think that ${noun:bats} are just really ugly birds."
+      "People probably used to think that ${noun:bat}s are just really ugly birds."
     ]
   };
 
@@ -14298,7 +14298,7 @@ ${description}`;
       this.description = "Get a list of the voices that can be used to hear the text";
     }
     getResponse$(rawInput) {
-      const voices = this.services.getVoices();
+      const voices = this.services.voices.getAllVoices();
       let locale = null;
       if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
         locale = rawInput.replace(
@@ -14326,7 +14326,7 @@ ${description}`;
       this.description = "Set the voice you hear that read the things. Type 'set_voice user 2' or 'set_voice computer 1'";
     }
     getResponse$(input) {
-      const voices = this.services.getVoices();
+      const voices = this.services.voices.getAllVoices();
       const voiceToChange = input.replace(
         /^set_voice (user|computer).*$/,
         "$1"
@@ -14467,34 +14467,30 @@ ${description}`;
       this.deps = deps;
       this.output$ = new ReplaySubject();
       this.isMuted = false;
-      this.voices = [];
       this.log = (level, message) => {
         console.log(`[Game/${level}] ${message}`);
       };
       this.writeOutput = (nextOutput) => {
         this.output$.next(nextOutput);
       };
-      this.services = {
+      const services2 = {
         getCommands: () => {
           return this.responder.getCommands();
         },
-        getVoices: () => {
-          if (this.voices.length === 0) {
-            console.log("collect voices");
-            this.voices = this.deps.synth.getVoices();
-          }
-          return this.voices;
-        },
-        setComputerVoice: (voice) => {
-          this.deps.users.computer_1.voice = voice;
-        },
-        setUserVoice: (voice) => {
-          this.deps.users.user_1.voice = voice;
-        },
         setIsMuted: (value) => {
           this.isMuted = value;
+        },
+        voices: this.deps.voices,
+        setComputerVoice: (voice) => {
+          this.deps.users.computer_1.setVoice(voice);
+          this.deps.voices.storeComputerVoice(voice);
+        },
+        setUserVoice: (voice) => {
+          this.deps.users.user_1.setVoice(voice);
+          this.deps.voices.storeUserVoice(voice);
         }
       };
+      this.services = services2;
       this.responder = new Responder(this.services);
       this.output$.subscribe(onMessage);
     }
@@ -14506,13 +14502,11 @@ ${description}`;
     /* window loaded */
     start() {
       this.log(LOG_DEBUG, "in start");
+      this.input$.pipe(take(1)).subscribe(() => {
+        this.deps.users.user_1.setVoice(this.deps.voices.getUserVoice());
+        this.deps.users.computer_1.setVoice(this.deps.voices.getComputerVoice());
+      });
       this.writeOutput("Hello! What is your name?");
-      this.input$.pipe(
-        tap((input) => {
-          this.deps.synth.cancel();
-          this.deps.users.user_1.speak(input);
-        })
-      ).subscribe();
       const takeName$ = this.input$.pipe(
         take(1),
         map((name) => {
@@ -14520,7 +14514,13 @@ ${description}`;
           return `Hello, ${name}!.`;
         })
       );
-      const takeChats$ = this.input$.pipe(
+      this.input$.pipe(
+        tap((input) => {
+          this.deps.synth.cancel();
+          this.deps.users.user_1.speak(input);
+        })
+      ).subscribe();
+      const applyResponse$ = this.input$.pipe(
         skip(1),
         switchMap((inputValue) => {
           const [responderModule] = this.responder.getResponders(inputValue);
@@ -14528,7 +14528,7 @@ ${description}`;
           return response$;
         })
       );
-      merge(takeName$, takeChats$).pipe(filter(Boolean)).subscribe((outputStr) => {
+      merge(takeName$, applyResponse$).pipe(filter(Boolean)).subscribe((outputStr) => {
         if (!this.isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
@@ -14540,9 +14540,8 @@ ${description}`;
 
   // src/lib/user.ts
   var User = class {
-    constructor(deps, _defaultVoiceIndex) {
+    constructor(deps) {
       this.deps = deps;
-      this._defaultVoiceIndex = _defaultVoiceIndex;
       this._name = null;
       this._voice = null;
     }
@@ -14552,38 +14551,122 @@ ${description}`;
     set name(value) {
       this._name = value;
     }
-    get voice() {
-      if (this._voice) {
-        return this._voice;
-      }
-      const voices = this.deps.synth.getVoices();
-      this._voice = voices[this._defaultVoiceIndex];
+    getVoice() {
       return this._voice;
     }
-    set voice(voice) {
+    setVoice(voice) {
       this._voice = voice;
     }
     speak(input) {
+      if (!this._voice) {
+        throw new Error(`user voice not set!`);
+      }
       const utterance = new SpeechSynthesisUtterance(input);
-      utterance.voice = this.voice;
+      utterance.voice = this._voice;
       this.deps.synth.speak(utterance);
     }
   };
   var createUsers = (deps) => {
-    const computer_1 = new User(deps, 0);
+    const computer_1 = new User(deps);
     computer_1.name = "Shelfie";
-    const user_1 = new User(deps, 1);
+    const user_1 = new User(deps);
     return { computer_1, user_1 };
+  };
+
+  // src/lib/voices.ts
+  var [COMPUTER_VOICE, USER_VOICE] = ["computer_voice", "user_voice"];
+  var parseVoiceObject = (storedVal) => {
+    try {
+      if (storedVal == null) {
+        throw new Error(`stored voice object is null!`);
+      }
+      const parsed = JSON.parse(storedVal);
+      if (!parsed.name) {
+        throw new Error(`object lacks name!`);
+      }
+      if (!parsed.lang) {
+        throw new Error(`object lacks lang!`);
+      }
+      if (!parsed.voiceURI) {
+        throw new Error(`object lacks voiceURI!`);
+      }
+      if (!parsed.localService) {
+        throw new Error(`object lacks localService!`);
+      }
+      return parsed;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  };
+  var serializeVoiceObject = (voice) => {
+    const newObject = {};
+    newObject.name = voice.name;
+    newObject.lang = voice.lang;
+    newObject.localService = voice.localService;
+    newObject.voiceURI = voice.voiceURI;
+    return JSON.stringify(newObject);
+  };
+  var Voices = class {
+    constructor(synth) {
+      this.synth = synth;
+      this.voices = null;
+    }
+    getAllVoices() {
+      const voices = this.voices;
+      if (voices == null || voices.length === 0) {
+        console.log("collecting voices...");
+        this.voices = this.synth.getVoices();
+      }
+      return this.voices ?? [];
+    }
+    getComputerVoice() {
+      const stored = parseVoiceObject(localStorage.getItem(COMPUTER_VOICE));
+      if (stored == null) {
+        localStorage.removeItem(COMPUTER_VOICE);
+      } else {
+      }
+      const voice = this.getAllVoices().find((voice2) => voice2.default);
+      if (voice) {
+        localStorage.setItem(COMPUTER_VOICE, serializeVoiceObject(voice));
+        return voice;
+      }
+      throw new Error(`Unable to fetch a computer voice!`);
+    }
+    getUserVoice() {
+      const stored = parseVoiceObject(localStorage.getItem(USER_VOICE));
+      if (stored == null) {
+        localStorage.removeItem(USER_VOICE);
+      } else {
+      }
+      const voices = this.getAllVoices();
+      const voiceIndex = voices.findIndex((voice2) => voice2.default);
+      const voice = voices[voiceIndex + 1];
+      if (voice) {
+        localStorage.setItem(USER_VOICE, serializeVoiceObject(voice));
+        return voice;
+      }
+      throw new Error(`Unable to fetch a user voice!`);
+    }
+    storeComputerVoice(voice) {
+      console.log(serializeVoiceObject(voice));
+    }
+    storeUserVoice(voice) {
+      console.log(serializeVoiceObject(voice));
+    }
+  };
+  var createVoiceServices = (synth) => {
+    return new Voices(synth);
   };
 
   // src/browser.ts
   function browser() {
     const synth = window.speechSynthesis;
-    const users = createUsers({ synth });
+    const voices = createVoiceServices(synth);
+    const users = createUsers({ synth, voices });
     const gameUi2 = document.createElement("bookshelf-adventure");
     gameUi2.user = users.user_1;
     const input$ = gameUi2.getInput$();
-    const gameDeps = { users, synth };
     const onMessage = (message) => {
       gameUi2.addComputerChat({
         time: /* @__PURE__ */ new Date(),
@@ -14591,7 +14674,11 @@ ${description}`;
         message
       });
     };
-    const gameServices = new Services(input$, gameDeps, onMessage);
+    const gameServices = new Services(
+      input$,
+      { voices, users, synth },
+      onMessage
+    );
     return { services: gameServices, gameUi: gameUi2 };
   }
   var { services, gameUi } = browser();

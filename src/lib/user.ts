@@ -1,15 +1,18 @@
+import { GameServices } from "./services";
+
 interface UserDeps {
   synth: {
     getVoices: SpeechSynthesis["getVoices"];
     speak: SpeechSynthesis["speak"];
   };
+  voices: GameServices["voices"];
 }
 
 export class User {
   private _name: string | null = null;
   private _voice: SpeechSynthesisVoice | null = null;
 
-  constructor(private deps: UserDeps, private _defaultVoiceIndex: number) {}
+  constructor(private deps: UserDeps) {}
 
   get name(): string | null {
     return this._name;
@@ -19,32 +22,28 @@ export class User {
     this._name = value;
   }
 
-  get voice(): SpeechSynthesisVoice {
-    if (this._voice) {
-      return this._voice;
-    }
-
-    const voices = this.deps.synth.getVoices();
-    this._voice = voices[this._defaultVoiceIndex];
+  getVoice(): SpeechSynthesisVoice | null {
     return this._voice;
   }
 
-  set voice(voice: SpeechSynthesisVoice) {
+  setVoice(voice: SpeechSynthesisVoice) {
     this._voice = voice;
   }
 
   speak(input: string) {
+    if (!this._voice) {
+      throw new Error(`user voice not set!`);
+    }
     const utterance = new SpeechSynthesisUtterance(input);
-    utterance.voice = this.voice;
+    utterance.voice = this._voice;
     this.deps.synth.speak(utterance);
   }
 }
 
 export const createUsers = (deps: UserDeps) => {
-  const computer_1 = new User(deps, 0);
+  const computer_1 = new User(deps);
   computer_1.name = "Shelfie";
-
-  const user_1 = new User(deps, 1);
+  const user_1 = new User(deps);
 
   return { computer_1, user_1 };
 };

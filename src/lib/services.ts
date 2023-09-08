@@ -2,6 +2,7 @@ import * as Rx from "rxjs";
 import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
 import { Responder } from "./responder";
 import type { createUsers } from "./user";
+import { VoiceServices } from "./voices";
 
 export interface CommandInfo {
   command: string;
@@ -10,10 +11,10 @@ export interface CommandInfo {
 
 export interface GameServices {
   getCommands: () => CommandInfo[];
-  getVoices: () => SpeechSynthesisVoice[];
+  setIsMuted: (value: boolean) => void;
   setComputerVoice: (voice: SpeechSynthesisVoice) => void;
   setUserVoice: (voice: SpeechSynthesisVoice) => void;
-  setIsMuted: (value: boolean) => void;
+  voices: VoiceServices;
 }
 
 export interface GameDeps {
@@ -23,6 +24,7 @@ export interface GameDeps {
     getVoices: SpeechSynthesis["getVoices"];
   };
   users: ReturnType<typeof createUsers>;
+  voices: VoiceServices;
 }
 
 enum LogLevel {
@@ -38,34 +40,29 @@ export class Services {
   private readonly responder: Responder;
   private readonly services: GameServices;
   private isMuted = false;
-  private voices: SpeechSynthesisVoice[] = [];
   constructor(
     private input$: Rx.Observable<string>,
     private deps: GameDeps,
     onMessage: (message: string) => void
   ) {
-    this.services = {
+    const services: GameServices = {
       getCommands: () => {
         return this.responder.getCommands();
-      },
-      getVoices: () => {
-        // initialize the voices array
-        if (this.voices.length === 0) {
-          console.log('collect voices');
-          this.voices = this.deps.synth.getVoices();
-        }
-        return this.voices;
-      },
-      setComputerVoice: (voice: SpeechSynthesisVoice) => {
-        this.deps.users.computer_1.voice = voice;
-      },
-      setUserVoice: (voice: SpeechSynthesisVoice) => {
-        this.deps.users.user_1.voice = voice;
       },
       setIsMuted: (value: boolean) => {
         this.isMuted = value;
       },
+      voices: this.deps.voices,
+      setComputerVoice: (voice: SpeechSynthesisVoice) => {
+        this.deps.users.computer_1.setVoice(voice);
+        this.deps.voices.storeComputerVoice(voice);
+      },
+      setUserVoice: (voice: SpeechSynthesisVoice) => {
+        this.deps.users.user_1.setVoice(voice);
+        this.deps.voices.storeUserVoice(voice);
+      },
     };
+    this.services = services;
     this.responder = new Responder(this.services);
     this.output$.subscribe(onMessage);
   }
@@ -88,18 +85,15 @@ export class Services {
   public start() {
     this.log(LOG_DEBUG, "in start");
 
+    // assign initial voices
+    // voices are only available after 1st user interaction
+    this.input$.pipe(take(1)).subscribe(() => {
+      this.deps.users.user_1.setVoice(this.deps.voices.getUserVoice());
+      this.deps.users.computer_1.setVoice(this.deps.voices.getComputerVoice());
+    });
+
     // begin chats
     this.writeOutput("Hello! What is your name?");
-
-    this.input$
-      .pipe(
-        tap((input) => {
-          // NOTE muted is ignored
-          this.deps.synth.cancel(); // cancel computer's speech, if active
-          this.deps.users.user_1.speak(input);
-        })
-      )
-      .subscribe();
 
     const takeName$ = this.input$.pipe(
       take(1),
@@ -109,17 +103,26 @@ export class Services {
         return `Hello, ${name}!.`;
       })
     );
-    const takeChats$ = this.input$.pipe(
+
+    this.input$
+      .pipe(
+        tap((input) => {
+          this.deps.synth.cancel(); // cancel computer's speech, if active
+          this.deps.users.user_1.speak(input); // NOTE muted is ignored
+        })
+      )
+      .subscribe();
+
+    const applyResponse$ = this.input$.pipe(
       skip(1),
       switchMap((inputValue) => {
-        // FIXME: combine all matched
         const [responderModule] = this.responder.getResponders(inputValue);
         const response$ = responderModule.getResponse$(inputValue);
         return response$;
       })
     );
 
-    Rx.merge(takeName$, takeChats$)
+    Rx.merge(takeName$, applyResponse$)
       .pipe(filter(Boolean))
       .subscribe((outputStr) => {
         if (!this.isMuted) {
@@ -127,6 +130,7 @@ export class Services {
         }
         this.writeOutput(outputStr);
       });
+
 
     this.log(LOG_DEBUG, "start complete");
   }

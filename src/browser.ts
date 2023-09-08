@@ -1,24 +1,29 @@
 import "./components";
-import { Services, GameDeps } from "./lib/services";
+import { Services } from "./lib/services";
 import { createUsers } from "./lib/user";
+import { createVoiceServices } from "./lib/voices";
 
 function browser() {
   const synth = window.speechSynthesis;
-  const users = createUsers({ synth });
+  const voices = createVoiceServices(synth);
+  const users = createUsers({ synth, voices });
   // Create UI component
   const gameUi = document.createElement("bookshelf-adventure");
   gameUi.user = users.user_1;
 
   // Create responder module
   const input$ = gameUi.getInput$();
-  const gameDeps: GameDeps = { users, synth };
   const onMessage = (message: string) => {
     gameUi.addComputerChat({
       time: new Date(), // unused
       message,
     });
   };
-  const gameServices = new Services(input$, gameDeps, onMessage);
+  const gameServices = new Services(
+    input$,
+    { voices, users, synth },
+    onMessage
+  );
 
   return { services: gameServices, gameUi };
 }

@@ -122,7 +122,7 @@ class GetVoicesResponder extends ResponderModule {
   name = "get_voices";
   description = "Get a list of the voices that can be used to hear the text";
   getResponse$(rawInput: string) {
-    const voices = this.services.getVoices();
+    const voices = this.services.voices.getAllVoices();
 
     let locale: string | null = null;
     if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
@@ -155,7 +155,7 @@ class SetVoiceResponder extends ResponderModule {
   description =
     "Set the voice you hear that read the things. Type 'set_voice user 2' or 'set_voice computer 1'";
   getResponse$(input: string) {
-    const voices = this.services.getVoices();
+    const voices = this.services.voices.getAllVoices();
 
     const voiceToChange = input.replace(
       /^set_voice (user|computer).*$/,

@@ -1,20 +1,10 @@
 import * as Rx from "rxjs";
 import { map } from "rxjs/operators";
+import { ResponderModule } from ".";
 import { Vocabulary, getDictionary } from "./dictionary";
+import { BatcaveResponder } from "./games";
 import { GameServices } from "./services";
-import { sample, shuffle } from "./utils";
-
-export abstract class ResponderModule {
-  constructor(protected services: GameServices) {}
-  public abstract readonly name: string;
-  public abstract readonly description: string;
-  public abstract getResponse$(input: string): Rx.Observable<string | false>;
-  public abstract keywordCheck(inputString: string): boolean;
-}
-
-const ofStatic = (input: string) => {
-  return Rx.of(input);
-};
+import { ofStatic, sample, shuffle } from "./utils";
 
 class GibberishResponder extends ResponderModule {
   _vocabulary: Vocabulary;
@@ -231,7 +221,7 @@ class TimerResponder extends ResponderModule {
   constructor(arg: GameServices) {
     super(arg);
   }
-  public getResponse$(input: string): Rx.Observable<string | false> {
+  public getResponse$(input: string) {
     let isHelp = input.match(/^timer$/) !== null;
     const timeoutTime = parseInt(input.replace(/^timer (\d+)s/, "$1"));
     if (isNaN(timeoutTime)) {
@@ -244,9 +234,43 @@ class TimerResponder extends ResponderModule {
     const thingToSay = input.replace(/^timer \d+s (.*)$/, "$1");
     return Rx.timer(timeoutTime * 1000).pipe(map(() => thingToSay));
   }
-  public keywordCheck(rawInput: string) {
-    const input = rawInput.toLowerCase();
-    return input.match(/^timer\b/) !== null;
+  public keywordCheck(input: string) {
+    return input.toLowerCase().match(/^timer\b/) !== null;
+  }
+}
+
+class PlayResponder extends ResponderModule {
+  name = "play";
+  description = "Type the name of a game to play. Try: 'play batcave'";
+
+  private games: ResponderModule[];
+  private activeGame: ResponderModule | null = null;
+
+  constructor(arg: GameServices) {
+    super(arg);
+    this.games = [new BatcaveResponder(arg)];
+  }
+
+  public getResponse$(input: string) {
+    let gameResponse$: Rx.Observable<string> | null = null;
+    if (this.activeGame) {
+      gameResponse$ = this.activeGame?.getResponse$(input);
+    } else {
+      const newActiveGame = this.games.find((responder) =>
+        responder.keywordCheck(input)
+      );
+      if (newActiveGame) {
+        this.activeGame = newActiveGame;
+      }
+      gameResponse$ = newActiveGame?.getResponse$(input) ?? null;
+    }
+
+    this._isActive = this.activeGame?.isActive ?? false;
+
+    return gameResponse$ ? gameResponse$ : ofStatic("Type: 'play batcave'");
+  }
+  public keywordCheck(input: string): boolean {
+    return input.toLowerCase().match(/^play\b/) !== null;
   }
 }
 
@@ -259,6 +283,7 @@ export const createResponders = (services: GameServices) => {
     new GetVoicesResponder(services),
     new SetVoiceResponder(services),
     new TimerResponder(services),
+    new PlayResponder(services),
     new GibberishResponder(services), // must be last
   ];
 };

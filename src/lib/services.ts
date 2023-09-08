@@ -1,6 +1,6 @@
 import * as Rx from "rxjs";
-import { filter, map, skip, switchMap, take, tap } from "rxjs/operators";
-import { Responder } from "./responder";
+import { map, skip, switchMap, take, tap } from "rxjs/operators";
+import { ResponderServices } from "./responder";
 import type { createUsers } from "./user";
 import { VoiceServices } from "./voices";
 
@@ -31,15 +31,18 @@ enum LogLevel {
   DEBUG = "debug",
   INFO = "info",
 }
+
 const LOG_DEBUG = LogLevel.DEBUG;
 // const LOG_INFO = LogLevel.INFO;
 type LogFn = (level: LogLevel, message: string | Error) => void;
 
 export class Services {
   private readonly output$ = new Rx.ReplaySubject<string>();
-  private readonly responder: Responder;
+  private readonly responder: ResponderServices;
   private readonly services: GameServices;
+
   private isMuted = false;
+
   constructor(
     private input$: Rx.Observable<string>,
     private deps: GameDeps,
@@ -63,7 +66,7 @@ export class Services {
       },
     };
     this.services = services;
-    this.responder = new Responder(this.services);
+    this.responder = new ResponderServices(this.services);
     this.output$.subscribe(onMessage);
   }
 
@@ -116,21 +119,28 @@ export class Services {
     const applyResponse$ = this.input$.pipe(
       skip(1),
       switchMap((inputValue) => {
-        const [responderModule] = this.responder.getResponders(inputValue);
-        const response$ = responderModule.getResponse$(inputValue);
+        let response$: Rx.Observable<string>;
+        const activeModules = this.responder.getActiveResponders();
+        if (activeModules.length !== 0) {
+          // 3a. take the response from first module
+          response$ = activeModules[0].getResponse$(inputValue);
+        } else {
+          // 3b. take an ad-hoc response from a module
+          const [responderModule] = this.responder.getRespondersByKeyword(inputValue);
+          response$ = responderModule.getResponse$(inputValue);
+        }
         return response$;
       })
     );
 
-    Rx.merge(takeName$, applyResponse$)
-      .pipe(filter(Boolean))
-      .subscribe((outputStr) => {
-        if (!this.isMuted) {
-          this.deps.users.computer_1.speak(outputStr);
-        }
-        this.writeOutput(outputStr);
-      });
+    Rx.merge(takeName$, applyResponse$).subscribe((outputStr) => {
+      if (!this.isMuted) {
+        this.deps.users.computer_1.speak(outputStr);
+      }
 
+
+      this.writeOutput(outputStr);
+    });
 
     this.log(LOG_DEBUG, "start complete");
   }

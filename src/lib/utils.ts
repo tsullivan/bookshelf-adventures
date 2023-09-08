@@ -1,3 +1,5 @@
+import * as Rx from "rxjs";
+
 export function sample<T>(arr: Array<T>) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -22,3 +24,6 @@ export function shuffle<T>(array: T[]): T[] {
   return finalArray;
 }
 
+export const ofStatic = (input: string) => {
+  return Rx.of(input);
+};

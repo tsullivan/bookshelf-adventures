@@ -101,14 +101,14 @@ export class Voices implements VoiceServices {
 
   storeComputerVoice(voice: SpeechSynthesisVoice) {
     // FIXME not working
-    console.log(serializeVoiceObject(voice));
     // localStorage.setItem(COMPUTER_VOICE, serializeVoiceObject(voice));
+    voice;
   }
 
   storeUserVoice(voice: SpeechSynthesisVoice) {
     // FIXME not working
-    console.log(serializeVoiceObject(voice));
     // localStorage.setItem(USER_VOICE, serializeVoiceObject(voice));
+    voice;
   }
 }
 

@@ -14032,6 +14032,20 @@ ${content}</tr>
     e8("bookshelf-adventure")
   ], Ui);
 
+  // src/lib/index.ts
+  var ResponderModule = class {
+    constructor(services2) {
+      this.services = services2;
+      this._isActive = false;
+    }
+    set isActive(val) {
+      this._isActive = val;
+    }
+    get isActive() {
+      return this._isActive;
+    }
+  };
+
   // src/lib/dictionary.json
   var dictionary_default = {
     jokes: [
@@ -14190,16 +14204,56 @@ ${content}</tr>
     }
     return finalArray;
   }
-
-  // src/lib/responders.ts
-  var ResponderModule = class {
-    constructor(services2) {
-      this.services = services2;
-    }
-  };
   var ofStatic = (input) => {
     return of(input);
   };
+
+  // src/lib/games.ts
+  var BatcaveResponder = class extends ResponderModule {
+    constructor() {
+      super(...arguments);
+      this.name = "batcave";
+      this.description = "Store your important items in the Batcave.";
+      this._items = [];
+    }
+    getResponse$(input) {
+      this._isActive = true;
+      if (["kl", "77"].includes(input)) {
+        this.isActive = false;
+        if (input === "kl") {
+          this._items.length = 0;
+          return ofStatic("You're leaving the Batcave! You have lost your stuff.");
+        } else {
+          return ofStatic("You're leaving the Batcave! You have kept all your stuff.");
+        }
+      }
+      let response = "";
+      if (input && input.toLowerCase() !== "play batcave") {
+        this._items.push(input);
+        response += `Added ${input}.
+
+`;
+      }
+      if (this._items.length !== 0) {
+        response += `Items:`;
+        this._items.forEach((item, index) => {
+          response += `
+${index + 1}. ${item}`;
+        });
+      }
+      return ofStatic(
+        [
+          response,
+          "You're in the Batcave! Type items to store. Type 'kl' to leave or 77 to keep your stuff."
+        ].join("\n\n")
+      );
+    }
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^play batcave$/) !== null;
+    }
+  };
+
+  // src/lib/responders.ts
   var GibberishResponder = class extends ResponderModule {
     constructor(arg) {
       super(arg);
@@ -14413,9 +14467,36 @@ ${description}`;
       const thingToSay = input.replace(/^timer \d+s (.*)$/, "$1");
       return timer(timeoutTime * 1e3).pipe(map(() => thingToSay));
     }
-    keywordCheck(rawInput) {
-      const input = rawInput.toLowerCase();
-      return input.match(/^timer\b/) !== null;
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^timer\b/) !== null;
+    }
+  };
+  var PlayResponder = class extends ResponderModule {
+    constructor(arg) {
+      super(arg);
+      this.name = "play";
+      this.description = "Type the name of a game to play. Try: 'play batcave'";
+      this.activeGame = null;
+      this.games = [new BatcaveResponder(arg)];
+    }
+    getResponse$(input) {
+      let gameResponse$ = null;
+      if (this.activeGame) {
+        gameResponse$ = this.activeGame?.getResponse$(input);
+      } else {
+        const newActiveGame = this.games.find(
+          (responder) => responder.keywordCheck(input)
+        );
+        if (newActiveGame) {
+          this.activeGame = newActiveGame;
+        }
+        gameResponse$ = newActiveGame?.getResponse$(input) ?? null;
+      }
+      this._isActive = this.activeGame?.isActive ?? false;
+      return gameResponse$ ? gameResponse$ : ofStatic("Type: 'play batcave'");
+    }
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^play\b/) !== null;
     }
   };
   var createResponders = (services2) => {
@@ -14427,13 +14508,14 @@ ${description}`;
       new GetVoicesResponder(services2),
       new SetVoiceResponder(services2),
       new TimerResponder(services2),
+      new PlayResponder(services2),
       new GibberishResponder(services2)
       // must be last
     ];
   };
 
   // src/lib/responder.ts
-  var Responder = class {
+  var ResponderServices = class {
     constructor(services2) {
       this.modules = [];
       createResponders(services2).forEach((responder) => {
@@ -14447,9 +14529,14 @@ ${description}`;
       }
       this.modules.push(module);
     }
-    getResponders(userInput) {
+    getRespondersByKeyword(userInput) {
       return this.modules.filter((res) => {
         return res.keywordCheck(userInput);
+      });
+    }
+    getActiveResponders() {
+      return this.modules.filter((res) => {
+        return res.isActive === true;
       });
     }
     getCommands() {
@@ -14491,7 +14578,7 @@ ${description}`;
         }
       };
       this.services = services2;
-      this.responder = new Responder(this.services);
+      this.responder = new ResponderServices(this.services);
       this.output$.subscribe(onMessage);
     }
     /* DOMContentLoaded */
@@ -14523,12 +14610,18 @@ ${description}`;
       const applyResponse$ = this.input$.pipe(
         skip(1),
         switchMap((inputValue) => {
-          const [responderModule] = this.responder.getResponders(inputValue);
-          const response$ = responderModule.getResponse$(inputValue);
+          let response$;
+          const activeModules = this.responder.getActiveResponders();
+          if (activeModules.length !== 0) {
+            response$ = activeModules[0].getResponse$(inputValue);
+          } else {
+            const [responderModule] = this.responder.getRespondersByKeyword(inputValue);
+            response$ = responderModule.getResponse$(inputValue);
+          }
           return response$;
         })
       );
-      merge(takeName$, applyResponse$).pipe(filter(Boolean)).subscribe((outputStr) => {
+      merge(takeName$, applyResponse$).subscribe((outputStr) => {
         if (!this.isMuted) {
           this.deps.users.computer_1.speak(outputStr);
         }
@@ -14649,10 +14742,10 @@ ${description}`;
       throw new Error(`Unable to fetch a user voice!`);
     }
     storeComputerVoice(voice) {
-      console.log(serializeVoiceObject(voice));
+      voice;
     }
     storeUserVoice(voice) {
-      console.log(serializeVoiceObject(voice));
+      voice;
     }
   };
   var createVoiceServices = (synth) => {

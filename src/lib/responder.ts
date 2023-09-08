@@ -1,7 +1,8 @@
 import { CommandInfo, GameServices } from "./services";
-import { ResponderModule, createResponders } from "./responders";
+import { createResponders } from "./responders";
+import { ResponderModule } from ".";
 
-export class Responder {
+export class ResponderServices {
   private modules: ResponderModule[] = [];
 
   constructor(services: GameServices) {
@@ -18,9 +19,15 @@ export class Responder {
     this.modules.push(module);
   }
 
-  public getResponders(userInput: string): ResponderModule[] {
+  public getRespondersByKeyword(userInput: string): ResponderModule[] {
     return this.modules.filter((res) => {
       return res.keywordCheck(userInput);
+    });
+  }
+
+  public getActiveResponders(): ResponderModule[] {
+    return this.modules.filter((res: ResponderModule) => {
+      return res.isActive === true;
     });
   }
 

@@ -2,7 +2,7 @@ import * as Rx from "rxjs";
 import { map } from "rxjs/operators";
 import { ResponderModule } from ".";
 import { Vocabulary, getDictionary } from "./dictionary";
-import { BatcaveResponder } from "./games";
+import { BatcaveResponder as BatcaveGame } from "./games";
 import { GameServices } from "./services";
 import { ofStatic, sample, shuffle } from "./utils";
 
@@ -111,13 +111,13 @@ class MuteUnmuteResponder extends ResponderModule {
 class GetVoicesResponder extends ResponderModule {
   name = "get_voices";
   description = "Get a list of the voices that can be used to hear the text";
-  getResponse$(rawInput: string) {
+  getResponse$(input: string) {
     const voices = this.services.voices.getAllVoices();
 
     let locale: string | null = null;
-    if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
-      locale = rawInput.replace(
-        /^(?:get_voices|voices) ([a-z][a-z]-[A-Z][A-Z])$/,
+    if (input.match(/^([gG]et_voices|[vV]oices) [a-z][a-z]-[A-Z][A-Z]$/)) {
+      locale = input.replace(
+        /^(?:[gG]et_voices|[vV]oices) ([a-z][a-z]-[A-Z][A-Z])$/,
         "$1"
       );
     }
@@ -134,9 +134,8 @@ class GetVoicesResponder extends ResponderModule {
 
     return ofStatic(staticString);
   }
-  keywordCheck(rawInput: string) {
-    const input = rawInput.toLowerCase();
-    return input.match(/^(get_voices|voices)\b/) !== null;
+  keywordCheck(input: string) {
+    return input.toLowerCase().match(/^(get_voices|voices)\b/) !== null;
   }
 }
 
@@ -147,12 +146,11 @@ class SetVoiceResponder extends ResponderModule {
   getResponse$(input: string) {
     const voices = this.services.voices.getAllVoices();
 
-    const voiceToChange = input.replace(
-      /^set_voice (user|computer).*$/,
-      "$1"
-    ) as "user" | "computer";
+    const voiceToChange = input
+      .toLowerCase()
+      .replace(/^set_voice (user|computer).*$/, "$1") as "user" | "computer";
     const voiceIndex = parseInt(
-      input.replace(/^set_voice (?:user|computer) (\d+)/, "$1")
+      input.toLowerCase().replace(/^set_voice (?:user|computer) (\d+)/, "$1")
     );
     const newVoice = voices[voiceIndex - 1] as SpeechSynthesisVoice | undefined;
 
@@ -171,9 +169,8 @@ class SetVoiceResponder extends ResponderModule {
       "type 'set_voice user|computer <number>'. type 'get_voices' to see the voice numbers"
     );
   }
-  keywordCheck(rawInput: string) {
-    const input = rawInput.toLowerCase();
-    return input.match(/^set_voice\b/) !== null;
+  keywordCheck(input: string) {
+    return input.toLowerCase().match(/^set_voice\b/) !== null;
   }
 }
 
@@ -190,28 +187,32 @@ class RepeatResponder extends ResponderModule {
 }
 
 class RepeatXResponder extends ResponderModule {
-  name = "repeatx";
+  name = "repeat_x";
   description = "This repeats something X number of times.";
   getResponse$(input: string) {
-    let isHelp = input.match(/^repeatx$/) !== null;
-    const repeatTimes = parseInt(input.replace(/^repeatx (\d+)/, "$1"));
+    let isHelp = input.toLowerCase().match(/^repeat_x$/) !== null;
+    const repeatTimes = parseInt(
+      input.toLowerCase().replace(/^repeat_x (\d+)/, "$1")
+    );
     if (isNaN(repeatTimes)) {
       isHelp = true;
     }
     if (isHelp) {
-      return ofStatic("type 'repeatx <number> thing-to-repeat'");
+      return ofStatic("type 'repeat_x <number> thing-to-repeat'");
     }
 
-    const whatToRepeat = input.replace(/^repeatx \d+ (.*$)/, "$1");
+    const whatToRepeat = input
+      .toLowerCase()
+      .replace(/^repeat_x \d+ (.*$)/, "$1");
+
     let result = "";
     for (let repeats = 0; repeats < repeatTimes; repeats++) {
       result += " " + whatToRepeat;
     }
     return ofStatic(result);
   }
-  public keywordCheck(rawInput: string) {
-    const input = rawInput.toLowerCase();
-    return input.match(/^repeatx (\d+) /) !== null;
+  public keywordCheck(input: string) {
+    return input.toLowerCase().match(/^repeat_x (\d+) /) !== null;
   }
 }
 
@@ -248,7 +249,7 @@ class PlayResponder extends ResponderModule {
 
   constructor(arg: GameServices) {
     super(arg);
-    this.games = [new BatcaveResponder(arg)];
+    this.games = [new BatcaveGame(arg)];
   }
 
   public getResponse$(input: string) {

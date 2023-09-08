@@ -14351,12 +14351,12 @@ ${description}`;
       this.name = "get_voices";
       this.description = "Get a list of the voices that can be used to hear the text";
     }
-    getResponse$(rawInput) {
+    getResponse$(input) {
       const voices = this.services.voices.getAllVoices();
       let locale = null;
-      if (rawInput.match(/^(get_voices|voices) [a-z][a-z]-[A-Z][A-Z]$/)) {
-        locale = rawInput.replace(
-          /^(?:get_voices|voices) ([a-z][a-z]-[A-Z][A-Z])$/,
+      if (input.match(/^([gG]et_voices|[vV]oices) [a-z][a-z]-[A-Z][A-Z]$/)) {
+        locale = input.replace(
+          /^(?:[gG]et_voices|[vV]oices) ([a-z][a-z]-[A-Z][A-Z])$/,
           "$1"
         );
       }
@@ -14368,9 +14368,8 @@ ${description}`;
       }).filter(Boolean).join("  \n");
       return ofStatic(staticString);
     }
-    keywordCheck(rawInput) {
-      const input = rawInput.toLowerCase();
-      return input.match(/^(get_voices|voices)\b/) !== null;
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^(get_voices|voices)\b/) !== null;
     }
   };
   var SetVoiceResponder = class extends ResponderModule {
@@ -14381,12 +14380,9 @@ ${description}`;
     }
     getResponse$(input) {
       const voices = this.services.voices.getAllVoices();
-      const voiceToChange = input.replace(
-        /^set_voice (user|computer).*$/,
-        "$1"
-      );
+      const voiceToChange = input.toLowerCase().replace(/^set_voice (user|computer).*$/, "$1");
       const voiceIndex = parseInt(
-        input.replace(/^set_voice (?:user|computer) (\d+)/, "$1")
+        input.toLowerCase().replace(/^set_voice (?:user|computer) (\d+)/, "$1")
       );
       const newVoice = voices[voiceIndex - 1];
       if (newVoice) {
@@ -14403,9 +14399,8 @@ ${description}`;
         "type 'set_voice user|computer <number>'. type 'get_voices' to see the voice numbers"
       );
     }
-    keywordCheck(rawInput) {
-      const input = rawInput.toLowerCase();
-      return input.match(/^set_voice\b/) !== null;
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^set_voice\b/) !== null;
     }
   };
   var RepeatResponder = class extends ResponderModule {
@@ -14425,28 +14420,29 @@ ${description}`;
   var RepeatXResponder = class extends ResponderModule {
     constructor() {
       super(...arguments);
-      this.name = "repeatx";
+      this.name = "repeat_x";
       this.description = "This repeats something X number of times.";
     }
     getResponse$(input) {
-      let isHelp = input.match(/^repeatx$/) !== null;
-      const repeatTimes = parseInt(input.replace(/^repeatx (\d+)/, "$1"));
+      let isHelp = input.toLowerCase().match(/^repeat_x$/) !== null;
+      const repeatTimes = parseInt(
+        input.toLowerCase().replace(/^repeat_x (\d+)/, "$1")
+      );
       if (isNaN(repeatTimes)) {
         isHelp = true;
       }
       if (isHelp) {
-        return ofStatic("type 'repeatx <number> thing-to-repeat'");
+        return ofStatic("type 'repeat_x <number> thing-to-repeat'");
       }
-      const whatToRepeat = input.replace(/^repeatx \d+ (.*$)/, "$1");
+      const whatToRepeat = input.toLowerCase().replace(/^repeat_x \d+ (.*$)/, "$1");
       let result = "";
       for (let repeats = 0; repeats < repeatTimes; repeats++) {
         result += " " + whatToRepeat;
       }
       return ofStatic(result);
     }
-    keywordCheck(rawInput) {
-      const input = rawInput.toLowerCase();
-      return input.match(/^repeatx (\d+) /) !== null;
+    keywordCheck(input) {
+      return input.toLowerCase().match(/^repeat_x (\d+) /) !== null;
     }
   };
   var TimerResponder = class extends ResponderModule {

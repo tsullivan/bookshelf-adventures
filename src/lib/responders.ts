@@ -1,9 +1,8 @@
 import * as Rx from "rxjs";
 import { map } from "rxjs/operators";
-import { ResponderModule } from ".";
+import { GameServices, ResponderModule } from ".";
 import { Vocabulary, getDictionary } from "./dictionary";
 import { BatcaveResponder as BatcaveGame } from "./games";
-import { GameServices } from "./services";
 import { ofStatic, sample, shuffle } from "./utils";
 
 class GibberishResponder extends ResponderModule {

@@ -1,8 +1,12 @@
-import { CommandInfo, GameServices } from "./services";
+import type {
+  CommandInfo,
+  GameServices,
+  ResponderModule,
+  ResponderServices,
+} from ".";
 import { createResponders } from "./responders";
-import { ResponderModule } from ".";
 
-export class ResponderServices {
+export class Responder implements ResponderServices {
   private modules: ResponderModule[] = [];
 
   constructor(services: GameServices) {

@@ -14513,7 +14513,7 @@ ${description}`;
   };
 
   // src/lib/responder.ts
-  var ResponderServices = class {
+  var Responder = class {
     constructor(services2) {
       this.modules = [];
       createResponders(services2).forEach((responder) => {
@@ -14576,7 +14576,7 @@ ${description}`;
         }
       };
       this.services = services2;
-      this.responder = new ResponderServices(this.services);
+      this.responder = new Responder(this.services);
       this.output$.subscribe(onMessage);
     }
     /* DOMContentLoaded */
@@ -14626,6 +14626,10 @@ ${description}`;
         this.writeOutput(outputStr);
       });
       this.log(LOG_DEBUG, "start complete");
+      return {
+        gameLaunch$: new Observable(),
+        gameExit$: new Observable()
+      };
     }
   };
 
@@ -14765,11 +14769,8 @@ ${description}`;
         message
       });
     };
-    const gameServices = new Services(
-      input$,
-      { voices, users, synth },
-      onMessage
-    );
+    const gameDeps = { voices, users, synth };
+    const gameServices = new Services(input$, gameDeps, onMessage);
     return { services: gameServices, gameUi: gameUi2 };
   }
   var { services, gameUi } = browser();
@@ -14777,12 +14778,25 @@ ${description}`;
     services.setup();
   });
   window.onload = () => {
-    const canvasEl = document.getElementById("canvas");
-    if (!canvasEl)
+    const mountElement = document.getElementById("mount");
+    if (!mountElement)
       throw new Error(`Start error: invalid HTML`);
-    canvasEl.replaceChildren(gameUi);
-    services.start();
+    mountElement.replaceChildren(gameUi);
+    const { gameExit$, gameLaunch$ } = services.start();
     document.title = "Bookshelf Adventures";
+    const gameHandles = [];
+    gameLaunch$.subscribe(function(game) {
+      window.alert(JSON.stringify({ launch: game }));
+      gameHandles.push(game);
+      game.start();
+    });
+    gameExit$.subscribe(function(event) {
+      window.alert(JSON.stringify({ exit: event }));
+      gameHandles.forEach((game) => {
+        game.stop();
+      });
+      gameHandles.length = 0;
+    });
   };
 })();
 /*! Bundled license information:

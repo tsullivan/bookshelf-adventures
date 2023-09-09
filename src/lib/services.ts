@@ -1,31 +1,7 @@
 import * as Rx from "rxjs";
 import { map, skip, switchMap, take, tap } from "rxjs/operators";
-import { ResponderServices } from "./responder";
-import type { createUsers } from "./user";
-import { VoiceServices } from "./voices";
-
-export interface CommandInfo {
-  command: string;
-  description: string;
-}
-
-export interface GameServices {
-  getCommands: () => CommandInfo[];
-  setIsMuted: (value: boolean) => void;
-  setComputerVoice: (voice: SpeechSynthesisVoice) => void;
-  setUserVoice: (voice: SpeechSynthesisVoice) => void;
-  voices: VoiceServices;
-}
-
-export interface GameDeps {
-  synth: {
-    cancel: SpeechSynthesis["cancel"];
-    speak: SpeechSynthesis["speak"];
-    getVoices: SpeechSynthesis["getVoices"];
-  };
-  users: ReturnType<typeof createUsers>;
-  voices: VoiceServices;
-}
+import type { BrowserServices, GameDeps, GameServices } from ".";
+import { Responder } from "./responder";
 
 enum LogLevel {
   DEBUG = "debug",
@@ -38,7 +14,7 @@ type LogFn = (level: LogLevel, message: string | Error) => void;
 
 export class Services {
   private readonly output$ = new Rx.ReplaySubject<string>();
-  private readonly responder: ResponderServices;
+  private readonly responder: Responder;
   private readonly services: GameServices;
 
   private isMuted = false;
@@ -66,7 +42,7 @@ export class Services {
       },
     };
     this.services = services;
-    this.responder = new ResponderServices(this.services);
+    this.responder = new Responder(this.services);
     this.output$.subscribe(onMessage);
   }
 
@@ -85,7 +61,7 @@ export class Services {
   }
 
   /* window loaded */
-  public start() {
+  public start(): BrowserServices {
     this.log(LOG_DEBUG, "in start");
 
     // assign initial voices
@@ -126,7 +102,8 @@ export class Services {
           response$ = activeModules[0].getResponse$(inputValue);
         } else {
           // 3b. take an ad-hoc response from a module
-          const [responderModule] = this.responder.getRespondersByKeyword(inputValue);
+          const [responderModule] =
+            this.responder.getRespondersByKeyword(inputValue);
           response$ = responderModule.getResponse$(inputValue);
         }
         return response$;
@@ -138,10 +115,14 @@ export class Services {
         this.deps.users.computer_1.speak(outputStr);
       }
 
-
       this.writeOutput(outputStr);
     });
 
     this.log(LOG_DEBUG, "start complete");
+
+    return {
+      gameLaunch$: new Rx.Observable(),
+      gameExit$: new Rx.Observable(),
+    };
   }
 }

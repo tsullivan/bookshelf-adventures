@@ -254,24 +254,32 @@ class PlayResponder extends ResponderModule {
 
   public getResponse$(input: string) {
     let gameResponse$: Rx.Observable<string> | null = null;
-    if (this.activeGame) {
-      gameResponse$ = this.activeGame?.getResponse$(input);
-    } else {
-      const newActiveGame = this.games.find((responder) =>
-        responder.keywordCheck(input)
-      );
-      if (newActiveGame) {
-        this.activeGame = newActiveGame;
-      }
-      gameResponse$ = newActiveGame?.getResponse$(input) ?? null;
+    const help$ = ofStatic("Type: 'play batcave'");
+    const command = input.toLowerCase().replace(/^(play|game) /, "");
+    const newActiveGame = this.games.find((responder) =>
+      responder.keywordCheck(command)
+    );
+
+    // allow reset with: 'game batcave reset'
+    if (input.toLowerCase().match(/(play|game) reset\b/)) {
+      // FIXME find game in collection and reset the object
+      const reset$ = ofStatic(`${command} done`);
+      return reset$;
     }
 
-    this._isActive = this.activeGame?.isActive ?? false;
+    if (newActiveGame && !this.activeGame) {
+      this.activeGame = newActiveGame;
+    }
 
-    return gameResponse$ ? gameResponse$ : ofStatic("Type: 'play batcave'");
+    gameResponse$ = this.activeGame?.getResponse$(command) ?? null;
+
+    // keep chat in game mode if any known game is "active"
+    this._isActive = Boolean(this.games.find(({ isActive }) => isActive));
+
+    return gameResponse$ ?? help$;
   }
   public keywordCheck(input: string): boolean {
-    return input.toLowerCase().match(/^play\b/) !== null;
+    return input.toLowerCase().match(/^(play|game)\b/) !== null;
   }
 }
 

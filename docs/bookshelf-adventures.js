@@ -14228,7 +14228,7 @@ ${content}</tr>
         }
       }
       let response = "";
-      if (input && input.toLowerCase() !== "play batcave") {
+      if (input && input.toLowerCase() !== "batcave") {
         this._items.push(input);
         response += `Added ${input}.
 
@@ -14249,7 +14249,7 @@ ${index + 1}. ${item}`;
       );
     }
     keywordCheck(input) {
-      return input.toLowerCase().match(/^play batcave$/) !== null;
+      return input.toLowerCase().match(/^batcave$/) !== null;
     }
   };
 
@@ -14477,22 +14477,24 @@ ${description}`;
     }
     getResponse$(input) {
       let gameResponse$ = null;
-      if (this.activeGame) {
-        gameResponse$ = this.activeGame?.getResponse$(input);
-      } else {
-        const newActiveGame = this.games.find(
-          (responder) => responder.keywordCheck(input)
-        );
-        if (newActiveGame) {
-          this.activeGame = newActiveGame;
-        }
-        gameResponse$ = newActiveGame?.getResponse$(input) ?? null;
+      const help$ = ofStatic("Type: 'play batcave'");
+      const command = input.toLowerCase().replace(/^(play|game) /, "");
+      const newActiveGame = this.games.find(
+        (responder) => responder.keywordCheck(command)
+      );
+      if (input.toLowerCase().match(/(play|game) reset\b/)) {
+        const reset$ = ofStatic(`${command} done`);
+        return reset$;
       }
-      this._isActive = this.activeGame?.isActive ?? false;
-      return gameResponse$ ? gameResponse$ : ofStatic("Type: 'play batcave'");
+      if (newActiveGame && !this.activeGame) {
+        this.activeGame = newActiveGame;
+      }
+      gameResponse$ = this.activeGame?.getResponse$(command) ?? null;
+      this._isActive = Boolean(this.games.find(({ isActive }) => isActive));
+      return gameResponse$ ?? help$;
     }
     keywordCheck(input) {
-      return input.toLowerCase().match(/^play\b/) !== null;
+      return input.toLowerCase().match(/^(play|game)\b/) !== null;
     }
   };
   var createResponders = (services2) => {

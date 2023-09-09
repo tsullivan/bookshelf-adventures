@@ -21,7 +21,7 @@ export class BatcaveResponder extends ResponderModule {
     }
 
     let response = "";
-    if (input && input.toLowerCase() !== "play batcave") {
+    if (input && input.toLowerCase() !== "batcave") {
       this._items.push(input);
       response += `Added ${input}.\n\n`;
     }
@@ -41,6 +41,6 @@ export class BatcaveResponder extends ResponderModule {
     );
   }
   public keywordCheck(input: string): boolean {
-    return input.toLowerCase().match(/^play batcave$/) !== null;
+    return input.toLowerCase().match(/^batcave$/) !== null;
   }
 }
